@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f6f7f2">
+	<title>Logga in – Mina djur</title>
+	<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+	<div class="auth-page">
+		<div class="auth-card">
+			<div class="auth-brand"><span class="brand-mark">🐾</span><span>Mina djur</span></div>
+			<h1>Välkommen tillbaka</h1>
+			<p class="sub">Logga in för att se dina djur och deras historik.</p>
+			<div id="notice" class="notice" role="alert" aria-live="assertive"></div>
+			<form id="loginForm">
+				<label for="username">Användarnamn</label>
+				<input id="username" name="username" required autocomplete="username" maxlength="32">
+				<label for="password">Lösenord</label>
+				<input id="password" name="password" type="password" required autocomplete="current-password">
+				<button class="primary" type="submit">Logga in</button>
+			</form>
+			<p class="auth-switch">Inget konto? <a href="/register.html">Skapa ett konto</a></p>
+		</div>
+	</div>
+	<script>
+		const form = document.querySelector('#loginForm');
+		const notice = document.querySelector('#notice');
+		const submitButton = form.querySelector('button[type="submit"]');
+
+		function showNotice(message) {
+			notice.textContent = message;
+			notice.classList.add('visible');
+		}
+
+		form.addEventListener('submit', async event => {
+			event.preventDefault();
+			notice.classList.remove('visible');
+			submitButton.disabled = true;
+			submitButton.textContent = 'Loggar in...';
+			try {
+				const response = await fetch('/api/auth/login', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						username: document.querySelector('#username').value.trim(),
+						password: document.querySelector('#password').value
+					})
+				});
+				if (!response.ok) {
+					const data = await response.json().catch(() => ({}));
+					throw new Error(data.error || 'Kunde inte logga in.');
+				}
+				window.location.href = '/';
+			} catch (error) {
+				showNotice(error.message);
+			} finally {
+				submitButton.disabled = false;
+				submitButton.textContent = 'Logga in';
+			}
+		});
+	</script>
+</body>
+</html>

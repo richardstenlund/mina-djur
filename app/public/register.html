@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f6f7f2">
+	<title>Skapa konto – Mina djur</title>
+	<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+	<div class="auth-page">
+		<div class="auth-card">
+			<div class="auth-brand"><span class="brand-mark">🐾</span><span>Mina djur</span></div>
+			<h1>Skapa ett konto</h1>
+			<p class="sub">Ditt konto är privat – bara du ser dina egna djur.</p>
+			<div id="notice" class="notice" role="alert" aria-live="assertive"></div>
+			<form id="registerForm">
+				<label for="username">Användarnamn</label>
+				<input id="username" name="username" required autocomplete="username" maxlength="32" pattern="[a-zA-Z0-9_.\-]{3,32}">
+				<span class="field-hint">3–32 tecken: bokstäver, siffror, punkt, understreck eller bindestreck.</span>
+				<label for="password">Lösenord</label>
+				<input id="password" name="password" type="password" required autocomplete="new-password" minlength="8">
+				<span class="field-hint">Minst 8 tecken.</span>
+				<label for="confirmPassword">Bekräfta lösenord</label>
+				<input id="confirmPassword" name="confirmPassword" type="password" required autocomplete="new-password" minlength="8">
+				<button class="primary" type="submit">Skapa konto</button>
+			</form>
+			<p class="auth-switch">Har du redan ett konto? <a href="/login.html">Logga in</a></p>
+		</div>
+	</div>
+	<script>
+		const form = document.querySelector('#registerForm');
+		const notice = document.querySelector('#notice');
+		const submitButton = form.querySelector('button[type="submit"]');
+
+		function showNotice(message) {
+			notice.textContent = message;
+			notice.classList.add('visible');
+		}
+
+		form.addEventListener('submit', async event => {
+			event.preventDefault();
+			notice.classList.remove('visible');
+			const password = document.querySelector('#password').value;
+			const confirmPassword = document.querySelector('#confirmPassword').value;
+			if (password !== confirmPassword) {
+				showNotice('Lösenorden matchar inte.');
+				return;
+			}
+			submitButton.disabled = true;
+			submitButton.textContent = 'Skapar konto...';
+			try {
+				const response = await fetch('/api/auth/register', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						username: document.querySelector('#username').value.trim(),
+						password
+					})
+				});
+				if (!response.ok) {
+					const data = await response.json().catch(() => ({}));
+					throw new Error(data.error || 'Kunde inte skapa kontot.');
+				}
+				window.location.href = '/';
+			} catch (error) {
+				showNotice(error.message);
+			} finally {
+				submitButton.disabled = false;
+				submitButton.textContent = 'Skapa konto';
+			}
+		});
+	</script>
+</body>
+</html>

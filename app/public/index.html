@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f6f7f2">
+	<title>Mina djur – omsorg med koll</title>
+	<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+	<header class="topbar">
+		<div class="topbar-inner">
+			<div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Mina djur</span></div>
+			<div class="topbar-right">
+				<div class="user-chip">Inloggad som <strong id="usernameLabel">…</strong></div>
+				<button class="logout-button" id="logoutButton" type="button">Logga ut</button>
+			</div>
+		</div>
+	</header>
+	<main class="page">
+		<section class="welcome" aria-labelledby="page-title">
+			<div>
+				<p class="eyebrow">Dina små favoriter</p>
+				<h1 id="page-title">Omsorg med koll.</h1>
+				<p class="welcome-copy">Håll koll på mående, vikt och vardagsomsorg för katterna och alla andra små kompisar.</p>
+			</div>
+			<div class="stats" aria-label="Översikt">
+				<div class="stat"><strong id="animalStat">0</strong><span>mina djur</span></div>
+				<div class="stat"><strong id="catStat">0</strong><span>katter</span></div>
+				<div class="stat"><strong id="recordStat">0</strong><span>anteckningar</span></div>
+			</div>
+		</section>
+
+		<div id="notice" class="notice" role="status" aria-live="polite"></div>
+		<div class="layout">
+			<section class="panel form-panel" aria-labelledby="add-title">
+				<h2 class="panel-heading" id="add-title">Lägg till ett djur</h2>
+				<p class="panel-intro">Börja med en liten profil. Du kan fylla på med vikt och skötsel efter hand.</p>
+				<form id="animalForm">
+					<label for="name">Namn</label>
+					<input id="name" name="name" required maxlength="60" placeholder="Till exempel Maja">
+
+					<label for="type">Djurart</label>
+					<select id="type" name="type">
+						<option>Katt</option><option>Kanin</option><option>Marsvin</option><option>Hamster</option>
+						<option>Råtta</option><option>Mus</option><option>Fågel</option><option>Annat</option>
+					</select>
+					<input id="customType" class="hidden" maxlength="40" placeholder="Skriv djurart" aria-label="Annan djurart">
+
+					<label for="birthday">Födelsedatum <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
+					<input id="birthday" name="birthday" type="date">
+
+					<label for="initialWeight">Vikt i kg <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
+					<input id="initialWeight" name="initialWeight" type="number" min="0.01" max="1000" step="0.01" inputmode="decimal" placeholder="Till exempel 4,2">
+					<span class="field-hint">Du kan lägga till fler viktmätningar i djurets historik.</span>
+
+					<label for="info">Övrig information</label>
+					<textarea id="info" name="info" maxlength="1000" placeholder="Färg, personlighet, foder, allergier eller annat viktigt..."></textarea>
+					<button class="primary" type="submit">Spara djur</button>
+				</form>
+			</section>
+
+			<section class="panel content-panel" aria-labelledby="animals-title">
+				<div class="list-heading">
+					<div class="list-title"><h2 id="animals-title">Mina djur</h2><span id="count" class="count">0 djur</span></div>
+					<div class="search-wrap"><input id="search" class="search" type="search" placeholder="Sök djur..." aria-label="Sök efter djur"></div>
+				</div>
+				<div id="animals" class="animal-list" aria-live="polite"></div>
+			</section>
+		</div>
+	</main>
+	<script src="/app.js"></script>
+</body>
+</html>
