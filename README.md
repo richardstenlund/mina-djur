@@ -22,7 +22,7 @@ egna djur.
    docker compose up -d --build
    ```
 
-3. Öppna `http://<din-docker-host>:3000` (porten styrs av `APP_PORT` i `.env`).
+3. Öppna `http://<din-docker-host>:4000` (porten styrs av `APP_PORT` i `.env`).
    Skapa ett konto på registreringssidan och logga in.
 
    > Kör du appen bakom en HTTPS-reverse proxy (Nginx/Traefik med TLS)?
