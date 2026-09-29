@@ -50,6 +50,33 @@
 				<label for="initialWeight">Startvikt i kg <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
 				<input id="initialWeight" name="initialWeight" type="number" min="0.01" max="1000" step="0.01" inputmode="decimal">
 
+				<label for="allergies" class="full">Allergier / specialbehov</label>
+				<textarea id="allergies" name="allergies" class="full" maxlength="500" placeholder="T.ex. foderallergi, kroniska tillstånd..."></textarea>
+
+				<label for="microchipId">Chipnummer</label>
+				<input id="microchipId" name="microchipId" maxlength="40">
+
+				<label for="vetName">Veterinärklinik</label>
+				<input id="vetName" name="vetName" maxlength="100">
+
+				<label for="vetPhone">Veterinärens telefonnummer</label>
+				<input id="vetPhone" name="vetPhone" maxlength="40">
+
+				<label for="insuranceCompany">Försäkringsbolag</label>
+				<input id="insuranceCompany" name="insuranceCompany" maxlength="100">
+
+				<label for="insuranceNumber">Försäkringsnummer</label>
+				<input id="insuranceNumber" name="insuranceNumber" maxlength="60">
+
+				<label for="foodType">Foder</label>
+				<input id="foodType" name="foodType" maxlength="200" placeholder="T.ex. Royal Canin torrfoder">
+
+				<label for="foodAmount">Mängd per gång</label>
+				<input id="foodAmount" name="foodAmount" maxlength="100" placeholder="T.ex. 60 g">
+
+				<label for="foodFrequency">Hur ofta</label>
+				<input id="foodFrequency" name="foodFrequency" maxlength="100" placeholder="T.ex. 2 gånger per dag">
+
 				<label for="info" class="full">Övrig information</label>
 				<textarea id="info" name="info" class="full" maxlength="1000"></textarea>
 
@@ -57,9 +84,25 @@
 			</form>
 		</section>
 
+		<section class="panel content-panel" aria-labelledby="reminders-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="reminders-title">Påminnelser</h2></div>
+			</div>
+			<p class="field-hint">Nästa datum räknas ut automatiskt utifrån senaste anteckningen av varje typ. Du kan ändra intervallet per djur.</p>
+			<div id="reminderList" class="reminder-list"></div>
+		</section>
+
+		<section class="panel content-panel" aria-labelledby="weight-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="weight-title">Viktutveckling</h2></div>
+			</div>
+			<div id="weightChart"></div>
+		</section>
+
 		<section class="panel content-panel" aria-labelledby="history-title">
 			<div class="list-heading">
 				<div class="list-title"><h2 id="history-title">Skötsel &amp; historik</h2></div>
+				<a id="exportLink" class="text-button" href="#">Exportera som CSV</a>
 			</div>
 			<form id="logForm" class="log-form"></form>
 			<div id="logList" class="log-list"></div>

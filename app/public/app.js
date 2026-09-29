@@ -1,5 +1,5 @@
 (() => {
-	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Pälsvård', 'Övrigt'];
+	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Övrigt'];
 	const typeIcons = { Katt: '🐈', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹', Råtta: '🐭', Mus: '🐭', Fågel: '🐦' };
 	const notice = document.querySelector('#notice');
 	const form = document.querySelector('#animalForm');
@@ -167,6 +167,18 @@
 		if (claws) meta.append(element('span', '', `✂️ Kloklippning ${formatDate(claws.date)}`));
 		if (!animal.birthday && !weight && !claws) meta.append(element('span', '', 'Ingen skötselhistorik ännu'));
 		text.append(meta);
+
+		const reminders = (animal.reminders || []).filter(reminder => reminder.status === 'försenad' || reminder.status === 'snart');
+		if (reminders.length) {
+			const badges = element('div', 'reminder-badges');
+			reminders.forEach(reminder => {
+				const label = reminder.status === 'försenad'
+					? `⏰ ${reminder.type} försenad`
+					: `⏰ ${reminder.type} om ${reminder.daysUntil} ${reminder.daysUntil === 1 ? 'dag' : 'dagar'}`;
+				badges.append(element('span', `reminder-badge ${reminder.status === 'försenad' ? 'overdue' : 'soon'}`, label));
+			});
+			text.append(badges);
+		}
 		if (animal.info) text.append(element('p', 'animal-info', animal.info));
 		identity.append(text);
 

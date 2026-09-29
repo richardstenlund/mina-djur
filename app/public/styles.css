@@ -69,6 +69,10 @@ input::placeholder, textarea::placeholder { color: #a2aaa1; }
 .animal-name { overflow-wrap: anywhere; margin: 0 0 5px; font-size: 1.03rem; letter-spacing: -.02em; }
 .animal-type { display: inline-block; padding: 3px 8px; border-radius: 20px; background: #f2f4ef; color: #68766b; font-size: .72rem; font-weight: 700; }
 .animal-meta { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 11px; color: var(--muted); font-size: .78rem; }
+.reminder-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.reminder-badge { padding: 3px 9px; border-radius: 999px; font-size: .74rem; font-weight: 700; }
+.reminder-badge.overdue { background: #fbe4e4; color: #a33b3b; }
+.reminder-badge.soon { background: #fdf1d8; color: #8a6412; }
 .animal-info { max-width: 540px; margin: 10px 0 0; color: #5f6a61; font-size: .86rem; line-height: 1.5; white-space: pre-wrap; }
 .icon-button { flex: 0 0 auto; align-self: flex-start; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #879087; font-size: .8rem; }
 .icon-button:hover { background: #fff1ee; color: #a94e40; }
@@ -111,6 +115,18 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 .photo-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 22px; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; }
 .photo-form label { font-weight: 700; font-size: .85rem; }
 .profile-form { margin-top: 6px; }
+
+/* Påminnelser */
+.reminder-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.reminder-row:last-child { border-bottom: none; }
+.reminder-name { flex: 0 0 150px; font-weight: 750; font-size: .88rem; }
+.reminder-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; flex: 1 1 200px; font-size: .82rem; color: var(--muted); }
+.reminder-badge.ok { background: #e4f2e6; color: #3f7a4d; }
+.reminder-interval-form { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.reminder-interval-form input { width: 64px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: .82rem; }
+
+/* Viktgraf */
+.weight-chart-svg { width: 100%; height: auto; max-height: 220px; }
 
 /* Login / registrering */
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }

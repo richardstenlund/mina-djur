@@ -22,6 +22,17 @@ CREATE TABLE IF NOT EXISTS animals (
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Extra profilfält, tillagda i efterhand (säkert att köra om vid varje start).
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS allergies TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS microchip_id TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS vet_name TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS vet_phone TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS insurance_company TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS insurance_number TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_type TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_amount TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_frequency TEXT;
+
 CREATE INDEX IF NOT EXISTS animals_user_id_idx ON animals(user_id);
 
 CREATE TABLE IF NOT EXISTS animal_records (
@@ -45,6 +56,19 @@ CREATE TABLE IF NOT EXISTS animal_photos (
 );
 
 CREATE INDEX IF NOT EXISTS animal_photos_animal_id_idx ON animal_photos(animal_id);
+
+-- Egna påminnelseintervall (i dagar) per djur och typ, t.ex. Kloklippning var 30:e
+-- dag. Saknas en rad används ett standardintervall (se ANIMALS_REMINDER_DEFAULTS
+-- i routes/animals.js).
+CREATE TABLE IF NOT EXISTS animal_reminders (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+	type TEXT NOT NULL,
+	interval_days INTEGER NOT NULL CHECK (interval_days > 0 AND interval_days <= 3650),
+	UNIQUE (animal_id, type)
+);
+
+CREATE INDEX IF NOT EXISTS animal_reminders_animal_id_idx ON animal_reminders(animal_id);
 
 -- Session-tabell som krävs av connect-pg-simple
 CREATE TABLE IF NOT EXISTS "session" (

@@ -7,7 +7,7 @@ const { pool } = require('../db/pool');
 
 const router = express.Router();
 
-const RECORD_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Pälsvård', 'Övrigt'];
+const RECORD_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Övrigt'];
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8 MB
@@ -17,6 +17,55 @@ const ALLOWED_PHOTO_TYPES = {
 	'image/webp': '.webp',
 	'image/gif': '.gif'
 };
+
+// Typer som kan få en påminnelse om "nästa gång", med standardintervall i dagar
+// om användaren inte satt ett eget.
+const REMINDER_DEFAULTS = {
+	Kloklippning: 30,
+	Vaccination: 365,
+	Avmaskning: 90
+};
+const REMINDER_TYPES = Object.keys(REMINDER_DEFAULTS);
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function isValidIntervalDays(value) {
+	return Number.isInteger(value) && value > 0 && value <= 3650;
+}
+
+// Räknar ut status för en påminnelse utifrån senaste anteckningen av den typen
+// och vald (eller standard-) intervall. Returnerar null om det aldrig loggats.
+function buildReminder(type, latestDate, intervalDays) {
+	const interval = intervalDays || REMINDER_DEFAULTS[type];
+	if (!latestDate) {
+		return { type, intervalDays: interval, lastDate: null, nextDate: null, daysUntil: null, status: 'saknas' };
+	}
+	const last = new Date(`${latestDate}T00:00:00Z`);
+	const next = new Date(last.getTime() + interval * MS_PER_DAY);
+	const todayUtc = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+	const daysUntil = Math.round((next.getTime() - todayUtc.getTime()) / MS_PER_DAY);
+	let status = 'ok';
+	if (daysUntil < 0) status = 'försenad';
+	else if (daysUntil <= 7) status = 'snart';
+	return {
+		type,
+		intervalDays: interval,
+		lastDate: latestDate,
+		nextDate: next.toISOString().slice(0, 10),
+		daysUntil,
+		status
+	};
+}
+
+// Bygger påminnelser för ett djur utifrån dess anteckningar och ev. egna intervall.
+function buildReminders(records, reminderRows) {
+	const intervalByType = new Map(reminderRows.map(row => [row.type, row.interval_days]));
+	return REMINDER_TYPES.map(type => {
+		const latest = records
+			.filter(record => record.type === type)
+			.sort((a, b) => b.date.localeCompare(a.date))[0];
+		return buildReminder(type, latest ? latest.date : null, intervalByType.get(type));
+	});
+}
 
 function requireAuth(req, res, next) {
 	if (!req.session.userId) {
@@ -36,7 +85,12 @@ function isValidDate(value) {
 // Validerar och normaliserar fälten för ett djur. Används av både
 // "skapa djur" och "uppdatera djur" så reglerna alltid stämmer överens.
 function parseAnimalInput(body) {
-	const { name, type, birthday, info, initialWeight } = body || {};
+	const {
+		name, type, birthday, info, initialWeight,
+		allergies, microchipId, vetName, vetPhone,
+		insuranceCompany, insuranceNumber,
+		foodType, foodAmount, foodFrequency
+	} = body || {};
 
 	if (typeof name !== 'string' || !name.trim() || name.length > 60) {
 		return { error: 'Ange ett namn (max 60 tecken).' };
@@ -58,16 +112,40 @@ function parseAnimalInput(body) {
 		}
 	}
 
+	const shortTextFields = {
+		allergies: [allergies, 500, 'Allergier/specialbehov är för långt (max 500 tecken).'],
+		microchipId: [microchipId, 40, 'Chipnumret är för långt (max 40 tecken).'],
+		vetName: [vetName, 100, 'Veterinärklinikens namn är för långt (max 100 tecken).'],
+		vetPhone: [vetPhone, 40, 'Telefonnumret är för långt (max 40 tecken).'],
+		insuranceCompany: [insuranceCompany, 100, 'Försäkringsbolagets namn är för långt (max 100 tecken).'],
+		insuranceNumber: [insuranceNumber, 60, 'Försäkringsnumret är för långt (max 60 tecken).'],
+		foodType: [foodType, 200, 'Fodertypen är för lång (max 200 tecken).'],
+		foodAmount: [foodAmount, 100, 'Fodermängden är för lång (max 100 tecken).'],
+		foodFrequency: [foodFrequency, 100, 'Utfodringsfrekvensen är för lång (max 100 tecken).']
+	};
+	const parsedShortText = {};
+	for (const [key, [value, maxLength, errorMessage]] of Object.entries(shortTextFields)) {
+		if (value !== undefined && value !== null && typeof value !== 'string') {
+			return { error: errorMessage };
+		}
+		if (typeof value === 'string' && value.length > maxLength) {
+			return { error: errorMessage };
+		}
+		parsedShortText[key] = (value || '').trim();
+	}
+
 	return {
 		value: {
 			name: name.trim(),
 			type: type.trim(),
 			birthday: birthday || null,
 			info: (info || '').trim(),
-			initialWeight: weightValue
+			initialWeight: weightValue,
+			...parsedShortText
 		}
 	};
 }
+
 
 const photoStorage = multer.diskStorage({
 	destination: async (req, file, cb) => {
@@ -102,8 +180,7 @@ router.use(requireAuth);
 router.get('/', async (req, res) => {
 	try {
 		const animalsResult = await pool.query(
-			`SELECT id, name, type, birthday, info, initial_weight
-			 FROM animals WHERE user_id = $1 ORDER BY created_at DESC`,
+			`SELECT ${ANIMAL_COLUMNS} FROM animals WHERE user_id = $1 ORDER BY created_at DESC`,
 			[req.session.userId]
 		);
 		const animalIds = animalsResult.rows.map(row => row.id);
@@ -137,17 +214,27 @@ router.get('/', async (req, res) => {
 			coverPhotoByAnimal = new Map(photosResult.rows.map(row => [row.animal_id, row.id]));
 		}
 
+		let remindersByAnimal = new Map();
+		if (animalIds.length) {
+			const remindersResult = await pool.query(
+				'SELECT animal_id, type, interval_days FROM animal_reminders WHERE animal_id = ANY($1::uuid[])',
+				[animalIds]
+			);
+			remindersByAnimal = remindersResult.rows.reduce((map, row) => {
+				const list = map.get(row.animal_id) || [];
+				list.push(row);
+				map.set(row.animal_id, list);
+				return map;
+			}, new Map());
+		}
+
 		const animals = animalsResult.rows.map(row => ({
-			id: row.id,
-			name: row.name,
-			type: row.type,
-			birthday: row.birthday ? row.birthday.toISOString().slice(0, 10) : '',
-			info: row.info || '',
-			initialWeight: row.initial_weight !== null ? Number(row.initial_weight) : null,
+			...formatAnimal(row),
 			records: recordsByAnimal.get(row.id) || [],
 			coverPhotoUrl: coverPhotoByAnimal.has(row.id)
 				? `/api/animals/${row.id}/photos/${coverPhotoByAnimal.get(row.id)}/file`
-				: null
+				: null,
+			reminders: buildReminders(recordsByAnimal.get(row.id) || [], remindersByAnimal.get(row.id) || [])
 		}));
 		res.json(animals);
 	} catch (error) {
@@ -156,32 +243,52 @@ router.get('/', async (req, res) => {
 	}
 });
 
+const ANIMAL_COLUMNS = `id, name, type, birthday, info, initial_weight,
+	allergies, microchip_id, vet_name, vet_phone,
+	insurance_company, insurance_number,
+	food_type, food_amount, food_frequency`;
+
+// Formaterar en databasrad från "animals" till det JSON-format som frontend använder.
+function formatAnimal(row) {
+	return {
+		id: row.id,
+		name: row.name,
+		type: row.type,
+		birthday: row.birthday ? row.birthday.toISOString().slice(0, 10) : '',
+		info: row.info || '',
+		initialWeight: row.initial_weight !== null ? Number(row.initial_weight) : null,
+		allergies: row.allergies || '',
+		microchipId: row.microchip_id || '',
+		vetName: row.vet_name || '',
+		vetPhone: row.vet_phone || '',
+		insuranceCompany: row.insurance_company || '',
+		insuranceNumber: row.insurance_number || '',
+		foodType: row.food_type || '',
+		foodAmount: row.food_amount || '',
+		foodFrequency: row.food_frequency || ''
+	};
+}
+
 // Lägg till ett nytt djur.
 router.post('/', async (req, res) => {
 	const parsed = parseAnimalInput(req.body);
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency } = parsed.value;
 
 	try {
 		const result = await pool.query(
-			`INSERT INTO animals (user_id, name, type, birthday, info, initial_weight)
-			 VALUES ($1, $2, $3, $4, $5, $6)
-			 RETURNING id, name, type, birthday, info, initial_weight`,
-			[req.session.userId, name, type, birthday, info, initialWeight]
+			`INSERT INTO animals (user_id, name, type, birthday, info, initial_weight,
+				allergies, microchip_id, vet_name, vet_phone, insurance_company, insurance_number,
+				food_type, food_amount, food_frequency)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+			 RETURNING ${ANIMAL_COLUMNS}`,
+			[req.session.userId, name, type, birthday, info, initialWeight,
+				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
+				foodType, foodAmount, foodFrequency]
 		);
-		const row = result.rows[0];
-		res.status(201).json({
-			id: row.id,
-			name: row.name,
-			type: row.type,
-			birthday: row.birthday ? row.birthday.toISOString().slice(0, 10) : '',
-			info: row.info || '',
-			initialWeight: row.initial_weight !== null ? Number(row.initial_weight) : null,
-			records: [],
-			coverPhotoUrl: null
-		});
+		res.status(201).json({ ...formatAnimal(result.rows[0]), records: [], photos: [], coverPhotoUrl: null, reminders: buildReminders([], []) });
 	} catch (error) {
 		console.error('Fel vid skapande av djur:', error);
 		res.status(500).json({ error: 'Kunde inte spara djuret just nu.' });
@@ -193,11 +300,11 @@ async function assertOwnedAnimal(animalId, userId) {
 	return result.rows.length > 0;
 }
 
-// Hämta ett enskilt djur (profil) med historik och foton.
+// Hämta ett enskilt djur (profil) med historik, foton och påminnelser.
 router.get('/:animalId', async (req, res) => {
 	try {
 		const animalResult = await pool.query(
-			'SELECT id, name, type, birthday, info, initial_weight FROM animals WHERE id = $1 AND user_id = $2',
+			`SELECT ${ANIMAL_COLUMNS} FROM animals WHERE id = $1 AND user_id = $2`,
 			[req.params.animalId, req.session.userId]
 		);
 		const row = animalResult.rows[0];
@@ -205,7 +312,7 @@ router.get('/:animalId', async (req, res) => {
 			return res.status(404).json({ error: 'Djuret hittades inte.' });
 		}
 
-		const [recordsResult, photosResult] = await Promise.all([
+		const [recordsResult, photosResult, remindersResult] = await Promise.all([
 			pool.query(
 				`SELECT id, type, record_date, weight, note FROM animal_records
 				 WHERE animal_id = $1 ORDER BY record_date DESC, created_at DESC`,
@@ -214,27 +321,29 @@ router.get('/:animalId', async (req, res) => {
 			pool.query(
 				'SELECT id, created_at FROM animal_photos WHERE animal_id = $1 ORDER BY created_at ASC',
 				[row.id]
+			),
+			pool.query(
+				'SELECT type, interval_days FROM animal_reminders WHERE animal_id = $1',
+				[row.id]
 			)
 		]);
 
+		const records = recordsResult.rows.map(record => ({
+			id: record.id,
+			type: record.type,
+			date: record.record_date.toISOString().slice(0, 10),
+			weight: record.weight !== null ? Number(record.weight) : null,
+			note: record.note || ''
+		}));
+
 		res.json({
-			id: row.id,
-			name: row.name,
-			type: row.type,
-			birthday: row.birthday ? row.birthday.toISOString().slice(0, 10) : '',
-			info: row.info || '',
-			initialWeight: row.initial_weight !== null ? Number(row.initial_weight) : null,
-			records: recordsResult.rows.map(record => ({
-				id: record.id,
-				type: record.type,
-				date: record.record_date.toISOString().slice(0, 10),
-				weight: record.weight !== null ? Number(record.weight) : null,
-				note: record.note || ''
-			})),
+			...formatAnimal(row),
+			records,
 			photos: photosResult.rows.map(photo => ({
 				id: photo.id,
 				url: `/api/animals/${row.id}/photos/${photo.id}/file`
-			}))
+			})),
+			reminders: buildReminders(records, remindersResult.rows)
 		});
 	} catch (error) {
 		console.error('Fel vid hämtning av djurprofil:', error);
@@ -248,32 +357,102 @@ router.put('/:animalId', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency } = parsed.value;
 
 	try {
 		const result = await pool.query(
-			`UPDATE animals SET name = $1, type = $2, birthday = $3, info = $4, initial_weight = $5
-			 WHERE id = $6 AND user_id = $7
-			 RETURNING id, name, type, birthday, info, initial_weight`,
-			[name, type, birthday, info, initialWeight, req.params.animalId, req.session.userId]
+			`UPDATE animals SET name = $1, type = $2, birthday = $3, info = $4, initial_weight = $5,
+				allergies = $6, microchip_id = $7, vet_name = $8, vet_phone = $9,
+				insurance_company = $10, insurance_number = $11,
+				food_type = $12, food_amount = $13, food_frequency = $14
+			 WHERE id = $15 AND user_id = $16
+			 RETURNING ${ANIMAL_COLUMNS}`,
+			[name, type, birthday, info, initialWeight,
+				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
+				foodType, foodAmount, foodFrequency,
+				req.params.animalId, req.session.userId]
 		);
 		const row = result.rows[0];
 		if (!row) {
 			return res.status(404).json({ error: 'Djuret hittades inte.' });
 		}
-		res.json({
-			id: row.id,
-			name: row.name,
-			type: row.type,
-			birthday: row.birthday ? row.birthday.toISOString().slice(0, 10) : '',
-			info: row.info || '',
-			initialWeight: row.initial_weight !== null ? Number(row.initial_weight) : null
-		});
+		res.json(formatAnimal(row));
 	} catch (error) {
 		console.error('Fel vid uppdatering av djur:', error);
 		res.status(500).json({ error: 'Kunde inte uppdatera djuret just nu.' });
 	}
 });
+
+// Sätt ett eget påminnelseintervall (i dagar) för en viss typ, eller ta bort det
+// (och återgå till standardvärdet) genom att skicka intervalDays = null.
+router.put('/:animalId/reminders/:type', async (req, res) => {
+	const { type } = req.params;
+	const { intervalDays } = req.body || {};
+	if (!REMINDER_TYPES.includes(type)) {
+		return res.status(400).json({ error: 'Ogiltig påminnelsetyp.' });
+	}
+	try {
+		const owned = await assertOwnedAnimal(req.params.animalId, req.session.userId);
+		if (!owned) {
+			return res.status(404).json({ error: 'Djuret hittades inte.' });
+		}
+		if (intervalDays === null || intervalDays === undefined || intervalDays === '') {
+			await pool.query('DELETE FROM animal_reminders WHERE animal_id = $1 AND type = $2', [req.params.animalId, type]);
+			return res.json({ type, intervalDays: REMINDER_DEFAULTS[type] });
+		}
+		const days = Number(intervalDays);
+		if (!isValidIntervalDays(days)) {
+			return res.status(400).json({ error: 'Ange ett intervall i dagar (1–3650).' });
+		}
+		await pool.query(
+			`INSERT INTO animal_reminders (animal_id, type, interval_days) VALUES ($1, $2, $3)
+			 ON CONFLICT (animal_id, type) DO UPDATE SET interval_days = EXCLUDED.interval_days`,
+			[req.params.animalId, type, days]
+		);
+		res.json({ type, intervalDays: days });
+	} catch (error) {
+		console.error('Fel vid uppdatering av påminnelse:', error);
+		res.status(500).json({ error: 'Kunde inte spara påminnelsen just nu.' });
+	}
+});
+
+// Exportera historiken som CSV, t.ex. för att ta med till veterinären.
+router.get('/:animalId/export.csv', async (req, res) => {
+	try {
+		const animalResult = await pool.query(
+			'SELECT name FROM animals WHERE id = $1 AND user_id = $2',
+			[req.params.animalId, req.session.userId]
+		);
+		const animal = animalResult.rows[0];
+		if (!animal) {
+			return res.status(404).json({ error: 'Djuret hittades inte.' });
+		}
+		const recordsResult = await pool.query(
+			`SELECT type, record_date, weight, note FROM animal_records
+			 WHERE animal_id = $1 ORDER BY record_date ASC, created_at ASC`,
+			[req.params.animalId]
+		);
+		const escapeCsv = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+		const lines = [['Datum', 'Typ', 'Vikt (kg)', 'Anteckning'].map(escapeCsv).join(';')];
+		recordsResult.rows.forEach(record => {
+			lines.push([
+				record.record_date.toISOString().slice(0, 10),
+				record.type,
+				record.weight !== null ? Number(record.weight) : '',
+				record.note || ''
+			].map(escapeCsv).join(';'));
+		});
+		const csv = `\uFEFF${lines.join('\r\n')}`;
+		const safeName = animal.name.replace(/[^a-zA-Z0-9åäöÅÄÖ_-]+/g, '_');
+		res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+		res.setHeader('Content-Disposition', `attachment; filename="${safeName || 'djur'}-historik.csv"`);
+		res.send(csv);
+	} catch (error) {
+		console.error('Fel vid export av historik:', error);
+		res.status(500).json({ error: 'Kunde inte exportera historiken just nu.' });
+	}
+});
+
 
 // Ta bort ett djur (och dess historik/foton via ON DELETE CASCADE).
 router.delete('/:animalId', async (req, res) => {

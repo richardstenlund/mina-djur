@@ -1,10 +1,10 @@
 ﻿# Mina djur
 
 Webbapp för att hålla koll på katter och smådjur: vikt, kloklippning,
-veterinärbesök, medicin, vaccinationer, pälsvård och egna anteckningar.
-Flera personer kan skapa varsitt konto – varje användare ser bara sina
-egna djur. Varje djur har en egen profilsida där du kan ladda upp bilder
-och uppdatera informationen.
+veterinärbesök, medicin, vaccinationer, avmaskning, pälsvård och egna
+anteckningar. Flera personer kan skapa varsitt konto – varje användare
+ser bara sina egna djur. Varje djur har en egen profilsida där du kan
+ladda upp bilder och uppdatera informationen.
 
 ## Köra med Docker
 
@@ -45,10 +45,24 @@ Där kan du:
 - ladda upp bilder (JPEG, PNG, WEBP eller GIF, max 8 MB per bild),
 - ta bort bilder,
 - uppdatera namn, djurart, födelsedatum, startvikt och övrig information,
-- lägga till och ta bort skötselanteckningar precis som på startsidan.
+- fylla i allergier/specialbehov, chipnummer, veterinärklinik med
+  telefonnummer, försäkringsbolag och försäkringsnummer,
+- ange foderschema (typ, mängd och hur ofta),
+- lägga till och ta bort skötselanteckningar precis som på startsidan,
+- se en graf över viktutvecklingen över tid,
+- exportera hela skötselhistoriken som en CSV-fil (öppningsbar i Excel).
 
 Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
 startsidan.
+
+## Påminnelser
+
+Varje djur får automatiska påminnelser för kloklippning (standard var
+30:e dag), vaccination (standard var 365:e dag) och avmaskning (standard
+var 90:e dag), baserat på den senast loggade anteckningen av respektive
+typ. Är ett datum nära eller passerat visas en varningsbricka både på
+djurets profilsida och som liten badge på djurkortet på startsidan. Du
+kan ändra intervallet per djur och påminnelsetyp direkt på profilsidan.
 
 ## Uppdatera appen
 
