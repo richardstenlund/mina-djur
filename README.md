@@ -1,4 +1,4 @@
-# Mina djur
+﻿# Mina djur
 
 Webbapp för att hålla koll på katter och smådjur: vikt, kloklippning,
 veterinärbesök, medicin, vaccinationer, pälsvård och egna anteckningar.
@@ -22,7 +22,7 @@ egna djur.
    docker compose up -d --build
    ```
 
-3. Öppna `http://<din-docker-host>:4000` (porten styrs av `APP_PORT` i `.env`).
+3. Öppna `http://<din-docker-host>:4300` (porten styrs av `APP_PORT` i `.env`).
    Skapa ett konto på registreringssidan och logga in.
 
    > Kör du appen bakom en HTTPS-reverse proxy (Nginx/Traefik med TLS)?
@@ -54,7 +54,11 @@ docker compose exec db pg_dump -U minadjur minadjur > backup.sql
 ```powershell
 cd app
 npm install
-$env:DATABASE_URL = "postgres://minadjur:losenord@localhost:5432/minadjur"
+$env:PGHOST = "localhost"
+$env:PGPORT = "5432"
+$env:PGUSER = "minadjur"
+$env:PGPASSWORD = "losenord"
+$env:PGDATABASE = "minadjur"
 $env:SESSION_SECRET = "en-lang-hemlighet"
 npm start
 ```
