@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f6f7f2">
+	<title>Djurprofil – Mina djur</title>
+	<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+	<header class="topbar">
+		<div class="topbar-inner">
+			<div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Mina djur</span></div>
+			<div class="topbar-right">
+				<a class="logout-button" href="/">Till mina djur</a>
+				<button class="logout-button" id="logoutButton" type="button">Logga ut</button>
+			</div>
+		</div>
+	</header>
+	<main class="page">
+		<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+		<section class="panel profile-panel" aria-labelledby="profile-title">
+			<div class="profile-head">
+				<span class="animal-icon profile-icon" id="profileIcon">🐾</span>
+				<div>
+					<h1 id="profile-title">Laddar...</h1>
+					<span class="animal-type" id="profileType"></span>
+				</div>
+			</div>
+
+			<div class="profile-gallery" id="gallery" aria-label="Bilder"></div>
+			<form id="photoForm" class="photo-form">
+				<label for="photoInput">Lägg till bild</label>
+				<input id="photoInput" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required>
+				<button class="primary" type="submit">Ladda upp bild</button>
+				<span class="field-hint">JPEG, PNG, WEBP eller GIF, max 8 MB.</span>
+			</form>
+
+			<form id="profileForm" class="log-form profile-form">
+				<label for="name">Namn</label>
+				<input id="name" name="name" required maxlength="60">
+
+				<label for="type">Djurart</label>
+				<input id="type" name="type" required maxlength="40">
+
+				<label for="birthday">Födelsedatum <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
+				<input id="birthday" name="birthday" type="date">
+
+				<label for="initialWeight">Startvikt i kg <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
+				<input id="initialWeight" name="initialWeight" type="number" min="0.01" max="1000" step="0.01" inputmode="decimal">
+
+				<label for="info" class="full">Övrig information</label>
+				<textarea id="info" name="info" class="full" maxlength="1000"></textarea>
+
+				<button class="primary full" type="submit">Spara ändringar</button>
+			</form>
+		</section>
+
+		<section class="panel content-panel" aria-labelledby="history-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="history-title">Skötsel &amp; historik</h2></div>
+			</div>
+			<form id="logForm" class="log-form"></form>
+			<div id="logList" class="log-list"></div>
+		</section>
+	</main>
+	<script src="/animal.js"></script>
+</body>
+</html>

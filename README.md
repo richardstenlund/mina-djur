@@ -3,7 +3,8 @@
 Webbapp för att hålla koll på katter och smådjur: vikt, kloklippning,
 veterinärbesök, medicin, vaccinationer, pälsvård och egna anteckningar.
 Flera personer kan skapa varsitt konto – varje användare ser bara sina
-egna djur.
+egna djur. Varje djur har en egen profilsida där du kan ladda upp bilder
+och uppdatera informationen.
 
 ## Köra med Docker
 
@@ -32,7 +33,22 @@ egna djur.
 
 Databasen (Postgres) körs i en egen container med en Docker-volym
 (`db_data`) så att all data — användare, djur och anteckningar — sparas
-mellan omstarter och uppdateringar.
+mellan omstarter och uppdateringar. Uppladdade bilder sparas i en egen
+volym (`uploads_data`) så de också finns kvar efter en omstart eller
+uppdatering.
+
+## Djurprofiler och bilder
+
+Klicka på "Öppna profil" på ett djur för att komma till dess egen sida.
+Där kan du:
+
+- ladda upp bilder (JPEG, PNG, WEBP eller GIF, max 8 MB per bild),
+- ta bort bilder,
+- uppdatera namn, djurart, födelsedatum, startvikt och övrig information,
+- lägga till och ta bort skötselanteckningar precis som på startsidan.
+
+Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
+startsidan.
 
 ## Uppdatera appen
 
@@ -41,7 +57,10 @@ docker compose pull   # om du hämtar en ny image
 docker compose up -d --build
 ```
 
-Databasen påverkas inte av att app-containern byggs om.
+Databasen påverkas inte av att app-containern byggs om. Eventuella
+schemaändringar (t.ex. nya tabeller) körs automatiskt vid varje
+serverstart, så det räcker med `git pull` + `docker compose up -d --build`
+för att få nya funktioner.
 
 ## Säkerhetskopiering
 
@@ -71,9 +90,11 @@ Kräver en lokalt körande Postgres-databas med schemat från
 - `app/server.js` – Express-server, sessioner (lagras i Postgres via
   `connect-pg-simple`), säkerhetsheaders.
 - `app/routes/auth.js` – registrering, inloggning, utloggning.
-- `app/routes/animals.js` – API för djur och deras historik, alltid
-  filtrerat på inloggad användares `user_id` så att ingen kan se någon
-  annans djur.
-- `app/db/init.sql` – databasschema som körs automatiskt första gången
-  Postgres-containern startar.
-- `app/public/` – frontend (login, registrering, huvudsidan).
+- `app/routes/animals.js` – API för djur och deras historik och bilder,
+  alltid filtrerat på inloggad användares `user_id` så att ingen kan se
+  någon annans djur.
+- `app/db/init.sql` – databasschema som körs automatiskt vid varje
+  serverstart (säkert eftersom det bara skapar saker som inte redan
+  finns).
+- `app/public/` – frontend (login, registrering, huvudsidan och
+  djurprofilsidan).

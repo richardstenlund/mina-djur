@@ -147,7 +147,15 @@
 		const card = element('article', 'animal-card');
 		const main = element('div', 'animal-main');
 		const identity = element('div', 'animal-identity');
-		identity.append(element('span', 'animal-icon', typeIcons[animal.type] || '🐾'));
+		if (animal.coverPhotoUrl) {
+			const cover = document.createElement('img');
+			cover.className = 'animal-cover';
+			cover.src = animal.coverPhotoUrl;
+			cover.alt = `Foto på ${animal.name}`;
+			identity.append(cover);
+		} else {
+			identity.append(element('span', 'animal-icon', typeIcons[animal.type] || '🐾'));
+		}
 		const text = element('div');
 		text.append(element('h3', 'animal-name', animal.name), element('span', 'animal-type', animal.type));
 
@@ -170,7 +178,11 @@
 		card.append(main);
 
 		const actions = element('div', 'card-actions');
-		actions.append(element('span', '', ''));
+		const openProfile = document.createElement('a');
+		openProfile.className = 'text-button';
+		openProfile.href = `/animal.html?id=${encodeURIComponent(animal.id)}`;
+		openProfile.textContent = 'Öppna profil';
+		actions.append(openProfile);
 		const openHistory = element('button', 'text-button', `Skötsel & historik (${animal.records.length})`);
 		openHistory.type = 'button';
 		openHistory.dataset.toggleHistory = animal.id;

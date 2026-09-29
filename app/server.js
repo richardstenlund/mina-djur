@@ -2,7 +2,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
-const { pool, waitForDatabase } = require('./db/pool');
+const { pool, waitForDatabase, runMigrations } = require('./db/pool');
 const authRoutes = require('./routes/auth');
 const animalsRoutes = require('./routes/animals');
 
@@ -18,6 +18,7 @@ if (!SESSION_SECRET) {
 
 async function start() {
 	await waitForDatabase();
+	await runMigrations();
 
 	const app = express();
 	app.disable('x-powered-by');

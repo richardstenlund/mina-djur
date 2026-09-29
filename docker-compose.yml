@@ -35,6 +35,8 @@ services:
       PORT: 3000
     ports:
       - "${APP_PORT:-4300}:3000"
+    volumes:
+      - uploads_data:/usr/src/app/uploads
     networks:
       - internal
 
@@ -43,3 +45,4 @@ networks:
 
 volumes:
   db_data:
+  uploads_data:

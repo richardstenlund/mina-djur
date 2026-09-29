@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const { Pool } = require('pg');
 
 const required = ['PGHOST', 'PGUSER', 'PGPASSWORD', 'PGDATABASE'];
@@ -37,4 +39,13 @@ async function waitForDatabase(retries = 20, delayMs = 1500) {
 	throw new Error(`Kunde inte ansluta till databasen efter flera försök. Senaste fel: ${lastError?.message}`);
 }
 
-module.exports = { pool, waitForDatabase };
+async function runMigrations() {
+	// init.sql använder bara CREATE ... IF NOT EXISTS, så det är säkert att
+	// köra vid varje serverstart. Det gör att befintliga installationer får
+	// nya tabeller/kolumner automatiskt utan att någon manuellt måste
+	// nollställa databasen vid en uppdatering.
+	const sql = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
+	await pool.query(sql);
+}
+
+module.exports = { pool, waitForDatabase, runMigrations };

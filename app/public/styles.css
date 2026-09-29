@@ -65,6 +65,7 @@ input::placeholder, textarea::placeholder { color: #a2aaa1; }
 .animal-main { display: flex; justify-content: space-between; gap: 16px; padding: 18px; }
 .animal-identity { display: flex; align-items: flex-start; gap: 13px; min-width: 0; }
 .animal-icon { flex: 0 0 43px; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 14px; background: var(--green-soft); font-size: 1.3rem; }
+.animal-cover { flex: 0 0 43px; width: 43px; height: 43px; border-radius: 14px; object-fit: cover; }
 .animal-name { overflow-wrap: anywhere; margin: 0 0 5px; font-size: 1.03rem; letter-spacing: -.02em; }
 .animal-type { display: inline-block; padding: 3px 8px; border-radius: 20px; background: #f2f4ef; color: #68766b; font-size: .72rem; font-weight: 700; }
 .animal-meta { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 11px; color: var(--muted); font-size: .78rem; }
@@ -73,6 +74,7 @@ input::placeholder, textarea::placeholder { color: #a2aaa1; }
 .icon-button:hover { background: #fff1ee; color: #a94e40; }
 .card-actions { display: flex; justify-content: space-between; gap: 12px; padding: 0 18px 15px 74px; }
 .text-button { padding: 0; border: 0; background: transparent; color: var(--green); font-size: .81rem; font-weight: 750; }
+a.text-button { text-decoration: none; display: inline-flex; align-items: center; }
 .text-button:hover { color: var(--green-dark); text-decoration: underline; }
 .details { border-top: 1px solid #edf0e9; background: #fbfcf9; }
 .details summary { padding: 13px 18px; color: var(--green); cursor: pointer; font-size: .83rem; font-weight: 750; list-style-position: inside; }
@@ -96,6 +98,19 @@ input::placeholder, textarea::placeholder { color: #a2aaa1; }
 .notice { display: none; margin: 0 0 18px; padding: 12px 14px; border: 1px solid #edd2c7; border-radius: 10px; background: #fff7f3; color: #8a4432; font-size: .85rem; line-height: 1.5; }
 .notice.visible { display: block; }
 .hidden { display: none !important; }
+
+/* Djurprofilsida */
+.profile-panel { margin-bottom: 20px; padding: 24px; }
+.profile-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.profile-icon { flex: 0 0 60px; width: 60px; height: 60px; font-size: 1.8rem; }
+.profile-panel h1 { margin: 0; font-size: 1.3rem; letter-spacing: -.025em; }
+.profile-gallery { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.gallery-item { position: relative; margin: 0; }
+.gallery-item img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); display: block; }
+.gallery-item .delete-log { position: absolute; top: 4px; right: 4px; padding: 2px 7px; background: rgba(255,255,255,.9); border-radius: 8px; }
+.photo-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 22px; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.photo-form label { font-weight: 700; font-size: .85rem; }
+.profile-form { margin-top: 6px; }
 
 /* Login / registrering */
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }

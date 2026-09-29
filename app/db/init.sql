@@ -36,6 +36,16 @@ CREATE TABLE IF NOT EXISTS animal_records (
 
 CREATE INDEX IF NOT EXISTS animal_records_animal_id_idx ON animal_records(animal_id);
 
+CREATE TABLE IF NOT EXISTS animal_photos (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+	filename TEXT NOT NULL,
+	mime_type TEXT NOT NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS animal_photos_animal_id_idx ON animal_photos(animal_id);
+
 -- Session-tabell som krävs av connect-pg-simple
 CREATE TABLE IF NOT EXISTS "session" (
 	"sid" VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
