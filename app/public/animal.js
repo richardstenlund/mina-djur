@@ -13,14 +13,15 @@
 	const animalId = params.get('id');
 	let animal = null;
 
-	if (!animalId) {
-		window.location.href = '/';
-		return;
-	}
-
 	function showNotice(message) {
 		notice.textContent = message;
 		notice.classList.add('visible');
+	}
+
+	if (!animalId) {
+		showNotice('Inget djur valt. Gå till startsidan och klicka på "Öppna profil" på ett djur.');
+		document.querySelector('.profile-panel').classList.add('hidden');
+		document.querySelector('.content-panel').classList.add('hidden');
 	}
 
 	function clearNotice() {
@@ -293,5 +294,5 @@
 	});
 
 	buildLogForm();
-	load();
+	if (animalId) load();
 })();
