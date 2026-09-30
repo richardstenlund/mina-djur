@@ -101,6 +101,7 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 .empty p { max-width: 300px; margin: 0 auto; color: var(--muted); font-size: .85rem; line-height: 1.55; }
 .notice { display: none; margin: 0 0 18px; padding: 12px 14px; border: 1px solid #edd2c7; border-radius: 10px; background: #fff7f3; color: #8a4432; font-size: .85rem; line-height: 1.5; }
 .notice.visible { display: block; }
+.notice.success { border-color: #cde3d0; background: #eef7ef; color: #3f7a4d; }
 .hidden { display: none !important; }
 
 /* Djurprofilsida */

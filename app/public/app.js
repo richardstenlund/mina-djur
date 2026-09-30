@@ -9,13 +9,14 @@
 	const saveButton = form.querySelector('button[type="submit"]');
 	let animals = [];
 
-	function showNotice(message) {
+	function showNotice(message, variant = 'error') {
 		notice.textContent = message;
 		notice.classList.add('visible');
+		notice.classList.toggle('success', variant === 'success');
 	}
 
 	function clearNotice() {
-		notice.classList.remove('visible');
+		notice.classList.remove('visible', 'success');
 	}
 
 	async function api(path, options = {}) {
@@ -195,6 +196,10 @@
 		openProfile.href = `/animal.html?id=${encodeURIComponent(animal.id)}`;
 		openProfile.textContent = 'Öppna profil';
 		actions.append(openProfile);
+		const quickClaw = element('button', 'text-button', '✂️ Klippt idag');
+		quickClaw.type = 'button';
+		quickClaw.dataset.quickClaw = animal.id;
+		actions.append(quickClaw);
 		const openHistory = element('button', 'text-button', `Skötsel & historik (${animal.records.length})`);
 		openHistory.type = 'button';
 		openHistory.dataset.toggleHistory = animal.id;
@@ -319,6 +324,28 @@
 	list.addEventListener('click', async event => {
 		const target = event.target.closest('button');
 		if (!target) return;
+		if (target.dataset.quickClaw) {
+			const animal = animals.find(item => item.id === target.dataset.quickClaw);
+			if (!animal) return;
+			target.disabled = true;
+			try {
+				const record = await api(`/api/animals/${animal.id}/records`, {
+					method: 'POST',
+					body: JSON.stringify({ type: 'Kloklippning', date: today(), weight: null, note: '' })
+				});
+				const updatedAnimal = await api(`/api/animals/${animal.id}`);
+				animals = animals.map(item => item.id === animal.id
+					? { ...item, records: [record, ...item.records], reminders: updatedAnimal.reminders }
+					: item);
+				render();
+				showNotice(`✂️ Kloklippning loggad för ${animal.name} idag.`, 'success');
+			} catch (error) {
+				showNotice(error.message);
+			} finally {
+				target.disabled = false;
+			}
+			return;
+		}
 		if (target.dataset.toggleHistory) {
 			const details = list.querySelector(`[data-history="${CSS.escape(target.dataset.toggleHistory)}"]`);
 			if (details) details.open = !details.open;
