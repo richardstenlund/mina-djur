@@ -161,6 +161,8 @@
 		text.append(element('h3', 'animal-name', animal.name), element('span', 'animal-type', animal.type));
 
 		const meta = element('div', 'animal-meta');
+		if (animal.sex) meta.append(element('span', '', `${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`));
+		if (animal.neutered) meta.append(element('span', '', '🔒 Kastrerad'));
 		if (animal.birthday) meta.append(element('span', '', `🎂 ${formatDate(animal.birthday)}`));
 		const weight = getWeight(animal);
 		if (weight) meta.append(element('span', '', `⚖️ ${new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2 }).format(weight)} kg`));
@@ -273,7 +275,9 @@
 			type: typeSelect.value === 'Annat' ? customType.value.trim() : typeSelect.value,
 			birthday: document.querySelector('#birthday').value,
 			info: document.querySelector('#info').value.trim(),
-			initialWeight: enteredWeight ? Number(enteredWeight.replace(',', '.')) : null
+			initialWeight: enteredWeight ? Number(enteredWeight.replace(',', '.')) : null,
+			sex: document.querySelector('#sex').value,
+			neutered: document.querySelector('#neutered').checked
 		};
 		saveButton.disabled = true;
 		try {

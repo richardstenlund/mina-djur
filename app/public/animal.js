@@ -72,7 +72,10 @@
 	function renderProfile() {
 		document.title = `${animal.name} – Mina djur`;
 		document.querySelector('#profile-title').textContent = animal.name;
-		document.querySelector('#profileType').textContent = animal.type;
+		const typeDetails = [animal.type];
+		if (animal.sex) typeDetails.push(`${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`);
+		if (animal.neutered) typeDetails.push('🔒 Kastrerad');
+		document.querySelector('#profileType').textContent = typeDetails.join(' · ');
 		const icon = document.querySelector('#profileIcon');
 		if (animal.photos.length) {
 			icon.replaceWith(Object.assign(document.createElement('img'), {
@@ -85,6 +88,8 @@
 		document.querySelector('#name').value = animal.name;
 		document.querySelector('#type').value = animal.type;
 		document.querySelector('#birthday').value = animal.birthday || '';
+		document.querySelector('#sex').value = animal.sex || '';
+		document.querySelector('#neutered').checked = Boolean(animal.neutered);
 		document.querySelector('#initialWeight').value = animal.initialWeight ?? '';
 		document.querySelector('#allergies').value = animal.allergies || '';
 		document.querySelector('#microchipId').value = animal.microchipId || '';
@@ -339,6 +344,8 @@
 			initialWeight: document.querySelector('#initialWeight').value
 				? Number(document.querySelector('#initialWeight').value.replace(',', '.'))
 				: null,
+			sex: document.querySelector('#sex').value,
+			neutered: document.querySelector('#neutered').checked,
 			allergies: document.querySelector('#allergies').value.trim(),
 			microchipId: document.querySelector('#microchipId').value.trim(),
 			vetName: document.querySelector('#vetName').value.trim(),

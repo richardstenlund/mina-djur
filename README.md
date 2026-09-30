@@ -44,7 +44,8 @@ Där kan du:
 
 - ladda upp bilder (JPEG, PNG, WEBP eller GIF, max 8 MB per bild),
 - ta bort bilder,
-- uppdatera namn, djurart, födelsedatum, startvikt och övrig information,
+- uppdatera namn, djurart, födelsedatum, kön, kastreringsstatus, startvikt
+  och övrig information,
 - fylla i allergier/specialbehov, chipnummer, veterinärklinik med
   telefonnummer, försäkringsbolag och försäkringsnummer,
 - ange foderschema (typ, mängd och hur ofta),

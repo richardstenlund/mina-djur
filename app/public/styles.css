@@ -48,6 +48,8 @@ input, select { min-height: 43px; padding: 9px 11px; }
 textarea { min-height: 88px; padding: 10px 11px; resize: vertical; }
 input:focus, select:focus, textarea:focus { border-color: #7fa18a; box-shadow: 0 0 0 3px #426b5518; }
 input::placeholder, textarea::placeholder { color: #a2aaa1; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.checkbox-label input[type="checkbox"] { width: auto; min-height: 0; flex: 0 0 auto; }
 .field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: .75rem; }
 .primary { width: 100%; min-height: 45px; margin-top: 20px; border: 0; border-radius: 10px; background: var(--green); color: white; font-weight: 750; transition: background .15s, transform .15s; }
 .primary:hover { transform: translateY(-1px); background: var(--green-dark); }

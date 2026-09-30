@@ -50,6 +50,18 @@
 					<label for="birthday">Födelsedatum <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
 					<input id="birthday" name="birthday" type="date">
 
+					<label for="sex">Kön <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
+					<select id="sex" name="sex">
+						<option value="">Okänt</option>
+						<option value="Hona">Hona</option>
+						<option value="Hane">Hane</option>
+					</select>
+
+					<label class="checkbox-label" for="neutered">
+						<input id="neutered" name="neutered" type="checkbox">
+						Kastrerad
+					</label>
+
 					<label for="initialWeight">Vikt i kg <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
 					<input id="initialWeight" name="initialWeight" type="number" min="0.01" max="1000" step="0.01" inputmode="decimal" placeholder="Till exempel 4,2">
 					<span class="field-hint">Du kan lägga till fler viktmätningar i djurets historik.</span>

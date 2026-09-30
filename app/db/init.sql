@@ -32,6 +32,8 @@ ALTER TABLE animals ADD COLUMN IF NOT EXISTS insurance_number TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_type TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_amount TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_frequency TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS sex TEXT CHECK (sex IN ('Hona', 'Hane', 'Okänt'));
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS neutered BOOLEAN;
 
 CREATE INDEX IF NOT EXISTS animals_user_id_idx ON animals(user_id);
 

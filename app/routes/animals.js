@@ -82,6 +82,8 @@ function isValidDate(value) {
 	return typeof value === 'string' && DATE_PATTERN.test(value) && !Number.isNaN(Date.parse(value));
 }
 
+const SEX_VALUES = ['Hona', 'Hane', 'Okänt'];
+
 // Validerar och normaliserar fälten för ett djur. Används av både
 // "skapa djur" och "uppdatera djur" så reglerna alltid stämmer överens.
 function parseAnimalInput(body) {
@@ -89,7 +91,8 @@ function parseAnimalInput(body) {
 		name, type, birthday, info, initialWeight,
 		allergies, microchipId, vetName, vetPhone,
 		insuranceCompany, insuranceNumber,
-		foodType, foodAmount, foodFrequency
+		foodType, foodAmount, foodFrequency,
+		sex, neutered
 	} = body || {};
 
 	if (typeof name !== 'string' || !name.trim() || name.length > 60) {
@@ -111,6 +114,14 @@ function parseAnimalInput(body) {
 			return { error: 'Ange en giltig vikt i kg (0–1000).' };
 		}
 	}
+	let sexValue = null;
+	if (sex !== undefined && sex !== null && sex !== '') {
+		if (!SEX_VALUES.includes(sex)) {
+			return { error: 'Ogiltigt kön.' };
+		}
+		sexValue = sex;
+	}
+	const neuteredValue = neutered === true || neutered === 'true';
 
 	const shortTextFields = {
 		allergies: [allergies, 500, 'Allergier/specialbehov är för långt (max 500 tecken).'],
@@ -141,6 +152,8 @@ function parseAnimalInput(body) {
 			birthday: birthday || null,
 			info: (info || '').trim(),
 			initialWeight: weightValue,
+			sex: sexValue,
+			neutered: neuteredValue,
 			...parsedShortText
 		}
 	};
@@ -246,7 +259,8 @@ router.get('/', async (req, res) => {
 const ANIMAL_COLUMNS = `id, name, type, birthday, info, initial_weight,
 	allergies, microchip_id, vet_name, vet_phone,
 	insurance_company, insurance_number,
-	food_type, food_amount, food_frequency`;
+	food_type, food_amount, food_frequency,
+	sex, neutered`;
 
 // Formaterar en databasrad från "animals" till det JSON-format som frontend använder.
 function formatAnimal(row) {
@@ -265,7 +279,9 @@ function formatAnimal(row) {
 		insuranceNumber: row.insurance_number || '',
 		foodType: row.food_type || '',
 		foodAmount: row.food_amount || '',
-		foodFrequency: row.food_frequency || ''
+		foodFrequency: row.food_frequency || '',
+		sex: row.sex || '',
+		neutered: row.neutered === true
 	};
 }
 
@@ -275,18 +291,18 @@ router.post('/', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered } = parsed.value;
 
 	try {
 		const result = await pool.query(
 			`INSERT INTO animals (user_id, name, type, birthday, info, initial_weight,
 				allergies, microchip_id, vet_name, vet_phone, insurance_company, insurance_number,
-				food_type, food_amount, food_frequency)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+				food_type, food_amount, food_frequency, sex, neutered)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 			 RETURNING ${ANIMAL_COLUMNS}`,
 			[req.session.userId, name, type, birthday, info, initialWeight,
 				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
-				foodType, foodAmount, foodFrequency]
+				foodType, foodAmount, foodFrequency, sex, neutered]
 		);
 		res.status(201).json({ ...formatAnimal(result.rows[0]), records: [], photos: [], coverPhotoUrl: null, reminders: buildReminders([], []) });
 	} catch (error) {
@@ -357,19 +373,20 @@ router.put('/:animalId', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered } = parsed.value;
 
 	try {
 		const result = await pool.query(
 			`UPDATE animals SET name = $1, type = $2, birthday = $3, info = $4, initial_weight = $5,
 				allergies = $6, microchip_id = $7, vet_name = $8, vet_phone = $9,
 				insurance_company = $10, insurance_number = $11,
-				food_type = $12, food_amount = $13, food_frequency = $14
-			 WHERE id = $15 AND user_id = $16
+				food_type = $12, food_amount = $13, food_frequency = $14,
+				sex = $15, neutered = $16
+			 WHERE id = $17 AND user_id = $18
 			 RETURNING ${ANIMAL_COLUMNS}`,
 			[name, type, birthday, info, initialWeight,
 				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
-				foodType, foodAmount, foodFrequency,
+				foodType, foodAmount, foodFrequency, sex, neutered,
 				req.params.animalId, req.session.userId]
 		);
 		const row = result.rows[0];
