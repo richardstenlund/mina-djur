@@ -12,6 +12,17 @@
 	color: var(--ink);
 	background: var(--cream);
 }
+:root[data-theme="dark"] {
+	--ink: #e9ece7;
+	--muted: #9aa69c;
+	--green: #7fb597;
+	--green-dark: #a9d4b8;
+	--green-soft: #1f2e26;
+	--cream: #171c19;
+	--line: #30392f;
+	--white: #222923;
+	--shadow: 0 16px 42px #00000040;
+}
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; background: var(--cream); }
 button, input, select, textarea { font: inherit; }
@@ -165,8 +176,7 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 .medication-actions { align-items: flex-start; }
 .medication-edit-form { flex: 1 0 100%; width: 100%; margin-top: 10px; }
 .feature-delete { flex: 0 0 auto; min-height: 36px; padding: 6px 9px; border-radius: 8px; }
-.feature-delete:hover { background: #fff1ee; color: #a94e40; }
-.feature-actions { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+.feature-delete:hover { background: #fff1ee; color: #a94e40; }.feature-actions { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 .feature-actions .text-button { min-height: 36px; }
 .expense-total { margin: 0; color: var(--green-dark); font-size: .95rem; font-weight: 800; }
 .share-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 0 12px; max-width: 680px; margin-top: 16px; }
@@ -184,6 +194,7 @@ a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:f
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .auth-card { width: min(400px, 100%); padding: 30px 28px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); box-shadow: var(--shadow); }
 .auth-brand { display: flex; align-items: center; gap: 11px; margin-bottom: 22px; font-size: 1.1rem; font-weight: 750; }
+.auth-theme-toggle { margin-left: auto; padding: 6px 10px; font-size: .78rem; }
 .auth-card h1 { font-size: 1.4rem; margin: 0 0 6px; letter-spacing: -.03em; }
 .auth-card p.sub { margin: 0 0 20px; color: var(--muted); font-size: .89rem; }
 .auth-switch { margin-top: 18px; text-align: center; font-size: .87rem; color: var(--muted); }
@@ -304,6 +315,27 @@ a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:f
 	.reminder-interval-form .field-hint { flex: 1; }
 	.auth-card { padding: 22px 17px; }
 }
+
+/* Mörkt läge – direkta överskrivningar för färger som inte använder CSS-variabler */
+:root[data-theme="dark"] .topbar { background: #171c19d9; border-bottom-color: var(--line); }
+:root[data-theme="dark"] .logout-button { background: var(--white); border-color: var(--line); }
+:root[data-theme="dark"] .example-tile { background: var(--white); }
+:root[data-theme="dark"] input, :root[data-theme="dark"] select, :root[data-theme="dark"] textarea { background: #1c221e; border-color: #3a453a; }
+:root[data-theme="dark"] .search, :root[data-theme="dark"] .type-filter { background: #1c221e; }
+:root[data-theme="dark"] .animal-card { background: var(--white); }
+:root[data-theme="dark"] .animal-type { background: #2a332b; color: #c3cbc3; }
+:root[data-theme="dark"] .reminder-badge.overdue { background: #4a2626; color: #f3a9a9; }
+:root[data-theme="dark"] .reminder-badge.soon { background: #4a3e1d; color: #f3d99a; }
+:root[data-theme="dark"] .reminder-badge.ok { background: #1f3a26; color: #9fd9ac; }
+:root[data-theme="dark"] .shared-badge { background: #1c2a34; border-color: #314a5c; color: #9ec2dd; }
+:root[data-theme="dark"] .icon-button { color: #8fa092; }
+:root[data-theme="dark"] .icon-button:hover, :root[data-theme="dark"] .feature-delete:hover { background: #3a2622; color: #e18c7d; }
+:root[data-theme="dark"] .details { background: #1c221e; border-top-color: #2a332b; }
+:root[data-theme="dark"] .log-form { background: var(--white); border-color: #2a332b; }
+:root[data-theme="dark"] .notice { background: #3a2622; border-color: #5a3a30; color: #f0bcae; }
+:root[data-theme="dark"] .notice.success { background: #1f3a26; border-color: #2f5a3c; color: #9fd9ac; }
+:root[data-theme="dark"] .stat { background: var(--white); }
+:root[data-theme="dark"] ::selection { background: #2f5a3c; color: #e9ece7; }
 
 /* Djurpass – utskrift/PDF-export (window.print) */
 @media print {

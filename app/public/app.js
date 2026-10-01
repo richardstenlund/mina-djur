@@ -462,5 +462,7 @@
 		}
 	});
 
+	if (window.MinaDjurTheme) window.MinaDjurTheme.wireThemeToggle('themeToggle');
+
 	init();
 })();

@@ -6,11 +6,21 @@
 	<meta name="theme-color" content="#f6f7f2">
 	<title>Skapa konto – Mina djur</title>
 	<link rel="stylesheet" href="/styles.css">
+	<script>
+		(function () {
+			try {
+				if (localStorage.getItem('mina-djur-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+			} catch { /* ignore */ }
+		})();
+	</script>
 </head>
 <body>
 	<div class="auth-page">
 		<div class="auth-card">
-			<div class="auth-brand"><span class="brand-mark">🐾</span><span>Mina djur</span></div>
+			<div class="auth-brand">
+				<span class="brand-mark">🐾</span><span>Mina djur</span>
+				<button class="logout-button auth-theme-toggle" id="themeToggle" type="button">🌙</button>
+			</div>
 			<h1>Skapa ett konto</h1>
 			<p class="sub">Ditt konto är privat – bara du ser dina egna djur.</p>
 			<div id="notice" class="notice" role="alert" aria-live="assertive"></div>
@@ -71,5 +81,7 @@
 			}
 		});
 	</script>
+	<script src="/dark-mode.js"></script>
+	<script>if (window.MinaDjurTheme) window.MinaDjurTheme.wireThemeToggle('themeToggle');</script>
 </body>
 </html>

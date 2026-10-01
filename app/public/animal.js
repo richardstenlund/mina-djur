@@ -1124,6 +1124,8 @@
 		});
 	}
 
+	if (window.MinaDjurTheme) window.MinaDjurTheme.wireThemeToggle('themeToggle');
+
 	buildLogForm();
 	document.querySelector('#medicationStartDate').value = today();
 	document.querySelector('#costDate').value = today();

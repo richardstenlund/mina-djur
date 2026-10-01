@@ -6,7 +6,9 @@ och egna anteckningar. Varje djur har en egen profilsida med bilder,
 privata dokument, utgifter och möjlighet att dela åtkomst med andra
 användarkonton. Du kan söka och filtrera dina djur på startsidan samt
 skriva ut eller spara ett djurpass som PDF från profilsidan. Layouten
-anpassar sig efter mobiltelefoner, surfplattor och större skärmar.
+anpassar sig efter mobiltelefoner, surfplattor och större skärmar, och du
+kan växla mellan ljust och mörkt läge med en knapp – valet sparas i
+webbläsaren.
 
 ## Superenkel installation
 

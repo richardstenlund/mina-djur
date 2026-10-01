@@ -6,12 +6,20 @@
 	<meta name="theme-color" content="#f6f7f2">
 	<title>Djurprofil – Mina djur</title>
 	<link rel="stylesheet" href="/styles.css">
+	<script>
+		(function () {
+			try {
+				if (localStorage.getItem('mina-djur-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+			} catch { /* ignore */ }
+		})();
+	</script>
 </head>
 <body>
 	<header class="topbar">
 		<div class="topbar-inner">
 			<div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Mina djur</span></div>
 			<div class="topbar-right">
+				<button class="logout-button no-print" id="themeToggle" type="button">🌙 Mörkt läge</button>
 				<a class="logout-button" href="/">Till mina djur</a>
 				<button class="logout-button" id="logoutButton" type="button">Logga ut</button>
 			</div>
@@ -223,6 +231,7 @@
 	</main>
 	<script src="/breeds.js"></script>
 	<script src="/example-images.js"></script>
+	<script src="/dark-mode.js"></script>
 	<script src="/animal.js"></script>
 </body>
 </html>
