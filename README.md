@@ -8,7 +8,10 @@ användarkonton. Du kan söka och filtrera dina djur på startsidan samt
 skriva ut eller spara ett djurpass som PDF från profilsidan. Layouten
 anpassar sig efter mobiltelefoner, surfplattor och större skärmar, och du
 kan växla mellan ljust och mörkt läge med en knapp – valet sparas i
-webbläsaren.
+webbläsaren. Sidan är även en installerbar app (PWA): du kan lägga till
+den på hemskärmen på mobil/surfplatta eller installera den som ett
+skrivbordsprogram, och appskalet fungerar även om nätverket tillfälligt
+försvinner.
 
 ## Superenkel installation
 
@@ -207,6 +210,22 @@ npm test
 Testerna täcker bland annat registrering/inloggning, att en användare
 aldrig kan se eller ändra en annan användares djur, delning mellan
 användare, medicin/utgifter/påminnelser och rate limiting.
+
+## Installera som app (PWA)
+
+Sidan går att installera som en app på mobil, surfplatta och dator:
+
+- **Android/Chrome/Edge**: öppna sidan, välj "Installera app" / "Lägg
+  till på startskärmen" i webbläsarmenyn.
+- **iPhone/iPad (Safari)**: tryck på Dela-ikonen och välj "Lägg till på
+  hemskärmen".
+- **Dator (Chrome/Edge)**: klicka på installationsikonen i adressfältet.
+
+Appen får en egen ikon, öppnas utan webbläsarens adressfält och
+appskalet (sidorna och utseendet) fungerar även om nätverket faller
+bort tillfälligt. All djurdata hämtas alltid live från din server när
+nätverket finns, så själva informationen är aldrig cachad eller
+inaktuell.
 
 ## Struktur
 
