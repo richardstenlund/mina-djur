@@ -6,30 +6,69 @@ anteckningar. Flera personer kan skapa varsitt konto – varje användare
 ser bara sina egna djur. Varje djur har en egen profilsida där du kan
 ladda upp bilder och uppdatera informationen.
 
-## Köra med Docker
+## Snabb installation på en Docker-server
 
-1. Kopiera miljömallen och fyll i egna värden:
+Du behöver en server med Git, Docker Engine och Docker Compose v2 installerat.
+Kör följande kommandon i serverns terminal:
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+```bash
+git clone https://github.com/richardstenlund/mina-djur.git
+cd mina-djur
+cp .env.example .env
+```
 
-   Öppna `.env` och sätt ett starkt `POSTGRES_PASSWORD` och en slumpad
-   `SESSION_SECRET` (t.ex. `openssl rand -hex 32`).
+Skapa två olika, starka hemligheter med `openssl rand -hex 32` (kör kommandot
+två gånger). Öppna sedan inställningsfilen:
 
-2. Bygg och starta:
+```bash
+nano .env
+```
 
-   ```powershell
-   docker compose up -d --build
-   ```
+Ersätt `POSTGRES_PASSWORD` och `SESSION_SECRET` med de hemligheter du nyss
+skapade. Behåll inte mallens exempelvärden. Spara i nano med `Ctrl+O`, Enter
+och avsluta med `Ctrl+X`. Låt `APP_PORT=4300` stå kvar, eller ändra till en
+ledig port om 4300 redan används.
 
-3. Öppna `http://<din-docker-host>:4300` (porten styrs av `APP_PORT` i `.env`).
-   Skapa ett konto på registreringssidan och logga in.
+Bygg och starta appen:
 
-   > Kör du appen bakom en HTTPS-reverse proxy (Nginx/Traefik med TLS)?
-   > Sätt då `COOKIE_SECURE=true` i `.env` för säkrare cookies. Kör du bara
-   > direkt över `http://`, låt den vara `false` (standard) annars fungerar
-   > inte inloggningen.
+```bash
+docker compose up -d --build
+```
+
+Öppna sedan `http://SERVERNS-IP:4300` (eller porten du valde) och skapa ditt
+konto via registreringssidan. Om sidan inte öppnas, kontrollera att porten är
+ledig och tillåten i serverns brandvägg:
+
+```bash
+docker compose ps
+docker compose logs --tail=100 app
+```
+
+Vid uppdatering efter en ny version räcker det att köra:
+
+```bash
+cd mina-djur
+git pull
+docker compose up -d --build
+```
+
+Databasen och uppladdade bilder sparas i Docker-volymerna `db_data` och
+`uploads_data`, även när appen byggs om. Ta inte bort volymerna om du vill
+behålla dina data.
+
+> **Säkerhet:** För åtkomst utanför hemnätverket, använd en HTTPS-reverse proxy
+> (t.ex. Caddy, Nginx eller Traefik) och sätt `COOKIE_SECURE=true` i `.env`.
+> Öppna inte tjänsten mot internet via okrypterad HTTP. För lokal HTTP-åtkomst
+> ska `COOKIE_SECURE=false` stå kvar.
+
+### Exempelbilder
+
+Här är några av illustrationerna som visas i appen innan du laddar upp egna
+foton:
+
+| Katt | Hund | Kanin | Fågel | Sköldpadda |
+|---|---|---|---|---|
+| ![Illustration av en katt](app/public/images/examples/cat.svg) | ![Illustration av en hund](app/public/images/examples/dog.svg) | ![Illustration av en kanin](app/public/images/examples/rabbit.svg) | ![Illustration av en fågel](app/public/images/examples/bird.svg) | ![Illustration av en sköldpadda](app/public/images/examples/turtle.svg) |
 
 Databasen (Postgres) körs i en egen container med en Docker-volym
 (`db_data`) så att all data — användare, djur och anteckningar — sparas

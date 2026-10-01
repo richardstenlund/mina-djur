@@ -37,6 +37,10 @@ h1 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.08; letter-spa
 .stat { min-width: 116px; padding: 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
 .stat strong { display: block; font-size: 1.35rem; letter-spacing: -.04em; }
 .stat span { color: var(--muted); font-size: .76rem; }
+.example-gallery { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: -8px 0 26px; }
+.example-tile { display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: var(--shadow); }
+.example-tile img { width: 56px; height: 56px; flex: 0 0 56px; border-radius: 12px; }
+.example-tile figcaption { color: var(--green-dark); font-size: .84rem; font-weight: 750; }
 .layout { display: grid; grid-template-columns: minmax(275px, 340px) minmax(0, 1fr); gap: 22px; align-items: start; }
 .panel { border: 1px solid var(--line); border-radius: 18px; background: var(--white); box-shadow: var(--shadow); }
 .form-panel { padding: 24px; }
@@ -144,6 +148,7 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 
 @media (max-width: 820px) {
 	.welcome { align-items: flex-start; flex-direction: column; }
+	.example-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	.layout { grid-template-columns: minmax(245px, .8fr) minmax(0, 1.2fr); gap: 14px; }
 	.form-panel, .content-panel { padding: 19px; }
 }
@@ -153,6 +158,10 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 	.local-note { font-size: .73rem; }
 	main { padding-top: 28px; }
 	.welcome { margin-bottom: 22px; }
+	.example-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-bottom: 20px; }
+	.example-tile { gap: 8px; padding: 8px; }
+	.example-tile img { width: 44px; height: 44px; flex-basis: 44px; }
+	.example-tile figcaption { font-size: .78rem; }
 	.stats { width: 100%; }
 	.stat { flex: 1; min-width: 0; padding: 11px 12px; }
 	.layout { grid-template-columns: 1fr; }
