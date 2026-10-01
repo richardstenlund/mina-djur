@@ -30,6 +30,8 @@
 	const sharingPanel = document.querySelector('#sharingPanel');
 	const shareForm = document.querySelector('#shareForm');
 	const shareList = document.querySelector('#shareList');
+	const shareCandidates = document.querySelector('#shareCandidates');
+	const shareUsernameOptions = document.querySelector('#shareUsernameOptions');
 
 	const params = new URLSearchParams(window.location.search);
 	const animalId = params.get('id');
@@ -568,11 +570,44 @@
 			sharingPanel.classList.remove('hidden');
 			animal.shares = Array.isArray(shares) ? shares : [];
 			renderShares();
+			await loadShareCandidates();
 		} catch (error) {
 			shareManagementEnabled = false;
 			sharingPanel.classList.add('hidden');
 			if (isOwner() === true || (error.status !== 403 && error.status !== 404)) safelyShowError(error);
 		}
+	}
+
+	async function loadShareCandidates() {
+		try {
+			const users = await api('/api/users');
+			const alreadyShared = new Set((animal.shares || []).map(share => share.username));
+			const candidates = users.filter(user => !alreadyShared.has(user.username));
+			renderShareCandidates(candidates);
+		} catch {
+			// Kandidatlistan är en hjälp, inte kritisk – misslyckas tyst om den inte kan hämtas.
+			shareCandidates.replaceChildren();
+		}
+	}
+
+	function renderShareCandidates(candidates) {
+		shareCandidates.replaceChildren();
+		shareUsernameOptions.replaceChildren();
+		candidates.forEach(user => shareUsernameOptions.append(new Option(user.username)));
+		if (!candidates.length) {
+			shareCandidates.append(element('p', 'field-hint', 'Alla andra konton på sidan har redan åtkomst till den här profilen.'));
+			return;
+		}
+		candidates.forEach(user => {
+			const chip = element('button', 'chip-button', user.username);
+			chip.type = 'button';
+			chip.addEventListener('click', () => {
+				const input = document.querySelector('#shareUsername');
+				input.value = user.username;
+				input.focus();
+			});
+			shareCandidates.append(chip);
+		});
 	}
 
 	function renderShares() {
@@ -1075,6 +1110,7 @@
 			await api(`/api/animals/${encodeURIComponent(animalId)}/shares/${encodeURIComponent(button.dataset.deleteShare)}`, { method: 'DELETE' });
 			animal.shares = animal.shares.filter(share => String(share.id) !== button.dataset.deleteShare);
 			renderShares();
+			await loadShareCandidates();
 		} catch (error) {
 			safelyShowError(error);
 		}

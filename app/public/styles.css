@@ -197,6 +197,9 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 .share-form label, .share-form .field-hint { grid-column: 1; }
 .share-form .primary { grid-column: 2; grid-row: 1 / span 3; width: auto; min-width: 190px; margin: 0 0 1px; padding-inline: 16px; }
 .subheading { margin: 24px 0 4px; font-size: .92rem; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip-button { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--green-soft); color: var(--ink); font-size: .82rem; font-weight: 700; cursor: pointer; }
+.chip-button:hover { border-color: var(--green); color: var(--green-dark); }
 .share-item { align-items: center; }
 .share-item .feature-item-title { font-size: .86rem; }
 a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {

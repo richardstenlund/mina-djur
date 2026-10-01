@@ -114,6 +114,10 @@ Via menyn i toppen når du två extra sidor:
   gett dig åtkomst till, grupperade efter vem som ägare djuret. Härifrån kan
   du öppna djurets fullständiga profil precis som vanligt.
 
+På varje djurs delningspanel ("Dela djurprofil") visas dessutom en lista
+med "Kan delas med" – alla konton som ännu inte har åtkomst till just den
+profilen. Klicka på ett namn för att snabbt fylla i det i delningsformuläret.
+
 På en delad djurprofil visas även en liten "Delad av …"-etikett bredvid
 djurets namn, så det alltid syns vem som egentligen äger djuret.
 

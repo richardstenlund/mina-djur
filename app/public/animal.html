@@ -230,10 +230,14 @@
 			<p class="field-hint">Lägg till en annan användares konto för att ge personen åtkomst till profilen och dess uppgifter.</p>
 			<form id="shareForm" class="share-form">
 				<label for="shareUsername">Användarnamn</label>
-				<input id="shareUsername" name="username" required minlength="3" maxlength="32" autocomplete="off" pattern="[A-Za-z0-9_.-]+" aria-describedby="shareUsernameHint">
+				<input id="shareUsername" name="username" list="shareUsernameOptions" required minlength="3" maxlength="32" autocomplete="off" pattern="[A-Za-z0-9_.-]+" aria-describedby="shareUsernameHint">
+				<datalist id="shareUsernameOptions"></datalist>
 				<span class="field-hint" id="shareUsernameHint">Användarnamn: 3–32 bokstäver, siffror, punkt, bindestreck eller understreck.</span>
 				<button class="primary" type="submit">Dela med användare</button>
 			</form>
+			<h3 class="subheading">Kan delas med</h3>
+			<p class="field-hint" id="shareCandidatesHint">Alla andra konton på sidan som du ännu inte delat profilen med. Klicka på ett namn för att fylla i det ovan.</p>
+			<div id="shareCandidates" class="chip-list" aria-live="polite"></div>
 			<h3 class="subheading">Personer med åtkomst</h3>
 			<div id="shareList" class="feature-list" aria-live="polite"></div>
 		</details>
