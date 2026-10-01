@@ -434,23 +434,26 @@ async function canAccessAnimal(animalId, userId) {
 }
 
 // Hämta ett enskilt djur (profil) med historik, foton och påminnelser.
+// Vem som helst som är inloggad får läsa en profil (för att kunna bläddra
+// bland andra användares djur), men bara ägaren och personer som fått
+// profilen delad med sig kan redigera eller se privata dokument.
 router.get('/:animalId', async (req, res) => {
 	try {
 		const animalResult = await pool.query(
 			`SELECT ${ANIMAL_COLUMNS.split(',').map(column => `a.${column.trim()}`).join(', ')},
 				a.user_id = $2 AS is_owner,
+				EXISTS (SELECT 1 FROM animal_shares s WHERE s.animal_id = a.id AND s.user_id = $2) AS is_shared,
 				u.username AS owner_username
 			 FROM animals a
 			 JOIN users u ON u.id = a.user_id
-			 WHERE a.id = $1 AND (a.user_id = $2 OR EXISTS (
-				SELECT 1 FROM animal_shares s WHERE s.animal_id = a.id AND s.user_id = $2
-			 ))`,
+			 WHERE a.id = $1`,
 			[req.params.animalId, req.session.userId]
 		);
 		const row = animalResult.rows[0];
 		if (!row) {
 			return res.status(404).json({ error: 'Djuret hittades inte.' });
 		}
+		const canEdit = row.is_owner || row.is_shared;
 
 		const [recordsResult, photosResult, remindersResult, medicationsResult, costsResult, documentsResult, sharesResult] = await Promise.all([
 			pool.query(
@@ -477,11 +480,15 @@ router.get('/:animalId', async (req, res) => {
 				 WHERE animal_id = $1 ORDER BY cost_date DESC, created_at DESC`,
 				[row.id]
 			),
-			pool.query(
-				`SELECT id, display_name, created_at FROM animal_documents
-				 WHERE animal_id = $1 ORDER BY created_at DESC`,
-				[row.id]
-			),
+			// Privata dokument (journaler, kvitton) hämtas bara om man faktiskt
+			// har åtkomst till djuret – inte till den som bara tittar offentligt.
+			canEdit
+				? pool.query(
+					`SELECT id, display_name, created_at FROM animal_documents
+					 WHERE animal_id = $1 ORDER BY created_at DESC`,
+					[row.id]
+				)
+				: Promise.resolve({ rows: [] }),
 			pool.query(
 				`SELECT s.id, u.username FROM animal_shares s
 				 JOIN users u ON u.id = s.user_id
@@ -508,6 +515,8 @@ router.get('/:animalId', async (req, res) => {
 		res.json({
 			...formatAnimal(row),
 			isOwner: row.is_owner,
+			isShared: row.is_shared,
+			canEdit,
 			ownerUsername: row.owner_username,
 			records,
 			photos: photosResult.rows.map(photo => ({
@@ -1014,13 +1023,12 @@ router.post('/:animalId/photos', async (req, res, next) => {
 	});
 });
 
-// Hämta själva bildfilen (kräver inloggning + ägarskap, serveras inte som statisk fil).
+// Hämta själva bildfilen (kräver inloggning, serveras inte som statisk fil).
+// Foton är läsbara för alla inloggade – precis som djurprofilen i övrigt –
+// så att man kan bläddra bland andra användares djur. Att ladda upp/ta bort
+// bilder kräver fortfarande ägarskap eller delad åtkomst (se routerna ovan).
 router.get('/:animalId/photos/:photoId/file', async (req, res) => {
 	try {
-		const accessible = await hasAnimalAccess(req.params.animalId, req.session.userId);
-		if (!accessible) {
-			return res.status(404).end();
-		}
 		const result = await pool.query(
 			'SELECT filename, mime_type FROM animal_photos WHERE id = $1 AND animal_id = $2',
 			[req.params.photoId, req.params.animalId]
@@ -1154,3 +1162,6 @@ router.delete('/:animalId/records/:recordId', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.buildReminders = buildReminders;
+module.exports.formatAnimal = formatAnimal;
+module.exports.formatDateOnly = formatDateOnly;

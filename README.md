@@ -109,17 +109,28 @@ Via menyn i toppen når du två extra sidor:
 
 - **Användare** (`/users.html`) – listar alla konton som finns på sidan (bara
   användarnamn, inget annat) så att du enkelt ser vem du kan dela ett djur
-  med. Listan visar även hur många djur ni redan delar med varandra.
+  med. Listan visar även hur många djur ni redan delar med varandra. Varje
+  konto har en "Visa djur"-länk till kontots djurlista (se nedan).
 - **Delat med mig** (`/shared.html`) – samlar alla djur som andra användare
   gett dig åtkomst till, grupperade efter vem som ägare djuret. Härifrån kan
   du öppna djurets fullständiga profil precis som vanligt.
+- **Visa en användares djur** (`/user-animals.html?id=…`), nås via
+  "Visa djur" på användarsidan – visar vilka djur ett valfritt konto har
+  lagt in, även om djuren inte delats med dig. Du kan öppna varje djurs
+  profil och bläddra i all information (profil, skötselhistorik, foton,
+  viktgraf, läkemedel och utgifter) skrivskyddat, men formulär och
+  ta bort-knappar är dolda och alla ändringsförsök nekas av servern.
+  Privata dokument och delningslistan visas inte för någon annan än ägaren
+  och de som fått profilen delad med sig.
 
 På varje djurs delningspanel ("Dela djurprofil") visas dessutom en lista
 med "Kan delas med" – alla konton som ännu inte har åtkomst till just den
 profilen. Klicka på ett namn för att snabbt fylla i det i delningsformuläret.
 
-På en delad djurprofil visas även en liten "Delad av …"-etikett bredvid
-djurets namn, så det alltid syns vem som egentligen äger djuret.
+På en delad eller skrivskyddat visad djurprofil visas en liten etikett
+bredvid djurets namn – "Delad av …" om profilen delats med dig, eller
+"…s djur · skrivskyddat" om du bara bläddrar i ett annat konto utan delad
+åtkomst – så det alltid syns vem som äger djuret och om du kan redigera.
 
 Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
 startsidan. Innan du laddar upp en egen bild visas en lokal exempelillustration
@@ -226,8 +237,9 @@ npm test
 ```
 
 Testerna täcker bland annat registrering/inloggning, att en användare
-aldrig kan se eller ändra en annan användares djur, delning mellan
-användare, användarlistan, medicin/utgifter/påminnelser och rate limiting.
+kan bläddra skrivskyddat bland en annan användares djur men aldrig kan
+ändra eller ta bort dem, delning mellan användare, användarlistan,
+medicin/utgifter/påminnelser och rate limiting.
 
 ## Installera som app (PWA)
 

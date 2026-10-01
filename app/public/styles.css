@@ -117,12 +117,23 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 .users-panel h2 { margin: 0 0 16px; font-size: 1.1rem; letter-spacing: -.02em; }
 .user-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 13px; }
 .user-card { display: flex; align-items: center; gap: 13px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
+.user-card .card-actions { margin-left: auto; padding: 0; flex-shrink: 0; }
 .user-avatar { flex: 0 0 43px; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 14px; background: var(--green-soft); font-size: 1.2rem; }
 .user-info { min-width: 0; }
 .user-name { margin: 0 0 7px; font-size: .98rem; overflow-wrap: anywhere; }
 .user-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .shared-group { margin-bottom: 30px; }
 .shared-group-title { margin: 0 0 13px; font-size: 1.1rem; letter-spacing: -.02em; }
+/* Skrivskyddat läge: visas när man bläddrar bland en annan användares djur
+   utan delad åtkomst. Döljer alla sätt att ändra/ta bort något, men visar
+   fortfarande all information (profil, historik, foton m.m.) som vanligt. */
+body.read-only-profile .delete-log,
+body.read-only-profile [data-edit-medication],
+body.read-only-profile .reminder-interval-form,
+body.read-only-profile #profileForm button[type="submit"] { display: none !important; }
+body.read-only-profile #profileForm input,
+body.read-only-profile #profileForm select,
+body.read-only-profile #profileForm textarea { background: var(--cream); cursor: default; }
 .details { border-top: 1px solid #edf0e9; background: #fbfcf9; }
 .details summary { padding: 13px 18px; color: var(--green); cursor: pointer; font-size: .83rem; font-weight: 750; list-style-position: inside; }
 .details-body { padding: 0 18px 18px; }

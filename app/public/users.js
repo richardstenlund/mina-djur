@@ -49,6 +49,13 @@
 		}
 		info.append(badges);
 		card.append(info);
+		const actions = element('div', 'card-actions');
+		const viewAnimals = document.createElement('a');
+		viewAnimals.className = 'text-button';
+		viewAnimals.href = `/user-animals.html?id=${encodeURIComponent(user.id)}`;
+		viewAnimals.textContent = 'Visa djur';
+		actions.append(viewAnimals);
+		card.append(actions);
 		return card;
 	}
 

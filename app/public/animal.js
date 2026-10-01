@@ -115,12 +115,43 @@
 		return null;
 	}
 
+	// Avgör om det går att redigera/lägga till saker på profilen. Ägaren och
+	// personer som fått profilen delad med sig kan redigera; alla andra
+	// inloggade användare kan bara bläddra (läsa) profilen skrivskyddat.
+	function canEditAnimal() {
+		if (!animal) return false;
+		if (typeof animal.canEdit === 'boolean') return animal.canEdit;
+		return isOwner() === true || animal.isShared === true;
+	}
+
 	function currency(amount) {
 		return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK' }).format(Number(amount) || 0);
 	}
 
 	function safelyShowError(error) {
 		showNotice(error && error.message ? error.message : 'Något gick fel. Försök igen.');
+	}
+
+	// Visar/döljer alla redigeringsmöjligheter (formulär, ta-bort-knappar m.m.)
+	// beroende på om man faktiskt får ändra profilen eller bara bläddrar den.
+	function applyAccessMode() {
+		const editable = canEditAnimal();
+		document.body.classList.toggle('read-only-profile', !editable);
+		profileForm.querySelectorAll('input, select, textarea').forEach(field => { field.disabled = !editable; });
+		exportLink.classList.toggle('hidden', !editable);
+		if (!editable) {
+			photoForm.classList.add('hidden');
+			logForm.classList.add('hidden');
+			medicationForm.classList.add('hidden');
+			costForm.classList.add('hidden');
+			documentForm.classList.add('hidden');
+		} else {
+			photoForm.classList.remove('hidden');
+			logForm.classList.remove('hidden');
+			medicationForm.classList.remove('hidden');
+			costForm.classList.remove('hidden');
+			documentForm.classList.remove('hidden');
+		}
 	}
 
 	function renderProfile() {
@@ -131,8 +162,11 @@
 		if (animal.neutered) typeDetails.push('🔒 Kastrerad');
 		document.querySelector('#profileType').textContent = typeDetails.join(' · ');
 		const ownerBadge = document.querySelector('#profileOwnerBadge');
-		if (animal.isOwner === false && animal.ownerUsername) {
+		if (animal.isOwner === false && animal.isShared === true && animal.ownerUsername) {
 			ownerBadge.textContent = `Delad av ${animal.ownerUsername}`;
+			ownerBadge.classList.remove('hidden');
+		} else if (animal.isOwner === false && animal.ownerUsername) {
+			ownerBadge.textContent = `${animal.ownerUsername}s djur · skrivskyddat`;
 			ownerBadge.classList.remove('hidden');
 		} else {
 			ownerBadge.classList.add('hidden');
@@ -198,12 +232,16 @@
 			const img = document.createElement('img');
 			img.src = photo.url;
 			img.alt = `Foto på ${animal.name}`;
-			const remove = element('button', 'delete-log', 'Ta bort');
-			remove.type = 'button';
-			remove.dataset.deletePhoto = photo.id;
-			figure.append(img, remove);
+			figure.append(img);
+			if (canEditAnimal()) {
+				const remove = element('button', 'delete-log', 'Ta bort');
+				remove.type = 'button';
+				remove.dataset.deletePhoto = photo.id;
+				figure.append(remove);
+			}
 			gallery.append(figure);
 		});
+		applyAccessMode();
 	}
 
 	function renderPrintPassport() {
@@ -315,19 +353,23 @@
 			}
 			row.append(info);
 
-			const intervalForm = element('form', 'reminder-interval-form');
-			intervalForm.dataset.reminderType = reminder.type;
-			const intervalInput = document.createElement('input');
-			intervalInput.type = 'number';
-			intervalInput.min = '1';
-			intervalInput.max = '3650';
-			intervalInput.value = reminder.intervalDays;
-			intervalInput.setAttribute('aria-label', `Intervall i dagar för ${reminder.type}`);
-			const intervalLabel = element('span', 'field-hint', 'dagars intervall');
-			const saveButton = element('button', 'text-button', 'Spara');
-			saveButton.type = 'submit';
-			intervalForm.append(intervalInput, intervalLabel, saveButton);
-			row.append(intervalForm);
+			if (canEditAnimal()) {
+				const intervalForm = element('form', 'reminder-interval-form');
+				intervalForm.dataset.reminderType = reminder.type;
+				const intervalInput = document.createElement('input');
+				intervalInput.type = 'number';
+				intervalInput.min = '1';
+				intervalInput.max = '3650';
+				intervalInput.value = reminder.intervalDays;
+				intervalInput.setAttribute('aria-label', `Intervall i dagar för ${reminder.type}`);
+				const intervalLabel = element('span', 'field-hint', 'dagars intervall');
+				const saveButton = element('button', 'text-button', 'Spara');
+				saveButton.type = 'submit';
+				intervalForm.append(intervalInput, intervalLabel, saveButton);
+				row.append(intervalForm);
+			} else {
+				row.append(element('span', 'field-hint', `${reminder.intervalDays} dagars intervall`));
+			}
 
 			reminderList.append(row);
 		});

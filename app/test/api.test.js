@@ -87,7 +87,7 @@ test('kan skapa, läsa, uppdatera och ta bort ett djur', async () => {
 	assert.equal(listAfterDelete.data.length, 0);
 });
 
-test('en användare kan inte se en annan användares djur', async () => {
+test('en användare kan se men inte redigera en annan användares djur', async () => {
 	const ownerClient = new TestClient(env.baseUrl);
 	const ownerUsername = uniqueUsername('dagny');
 	await ownerClient.post('/api/auth/register', { username: ownerUsername, password: 'test12345' });
@@ -98,12 +98,55 @@ test('en användare kan inte se en annan användares djur', async () => {
 	const otherUsername = uniqueUsername('erik');
 	await otherClient.post('/api/auth/register', { username: otherUsername, password: 'test12345' });
 
+	// "Mina djur"-listan ska bara innehålla egna och delade djur, inte andras.
 	const otherList = await otherClient.get('/api/animals');
 	assert.equal(otherList.status, 200);
 	assert.equal(otherList.data.length, 0);
 
+	// Men profilen går att läsa (för att kunna bläddra bland andra användares djur),
+	// skrivskyddat och utan privata dokument eller delningslista.
 	const directFetch = await otherClient.get(`/api/animals/${created.data.id}`);
-	assert.equal(directFetch.status, 404);
+	assert.equal(directFetch.status, 200);
+	assert.equal(directFetch.data.isOwner, false);
+	assert.equal(directFetch.data.isShared, false);
+	assert.equal(directFetch.data.canEdit, false);
+	assert.equal(directFetch.data.ownerUsername, ownerUsername);
+	assert.deepEqual(directFetch.data.documents, []);
+	assert.deepEqual(directFetch.data.shares, []);
+
+	// Skrivåtgärder ska fortfarande nekas (404, för att inte läcka att id:t finns).
+	const updateAttempt = await otherClient.put(`/api/animals/${created.data.id}`, { name: 'Kapad', type: 'Hund' });
+	assert.equal(updateAttempt.status, 404);
+	const deleteAttempt = await otherClient.delete(`/api/animals/${created.data.id}`);
+	assert.equal(deleteAttempt.status, 404);
+	const recordAttempt = await otherClient.post(`/api/animals/${created.data.id}/records`, { type: 'Vikt', date: '2024-01-01', weight: 4 });
+	assert.equal(recordAttempt.status, 404);
+});
+
+test('man kan bläddra bland en annan användares djur skrivskyddat via /api/users/:id/animals', async () => {
+	const ownerClient = new TestClient(env.baseUrl);
+	const ownerUsername = uniqueUsername('frida');
+	const register = await ownerClient.post('/api/auth/register', { username: ownerUsername, password: 'test12345' });
+	const ownerId = register.data.id;
+	const created = await ownerClient.post('/api/animals', { name: 'Synlig', type: 'Katt' });
+
+	const otherClient = new TestClient(env.baseUrl);
+	await otherClient.post('/api/auth/register', { username: uniqueUsername('gustav'), password: 'test12345' });
+
+	const response = await otherClient.get(`/api/users/${ownerId}/animals`);
+	assert.equal(response.status, 200);
+	assert.equal(response.data.username, ownerUsername);
+	const animal = response.data.animals.find(item => item.id === created.data.id);
+	assert.ok(animal, 'djuret ska finnas med i listan');
+	assert.equal(animal.isOwner, false);
+	assert.equal(animal.canEdit, false);
+	assert.equal(animal.ownerUsername, ownerUsername);
+
+	const unauthResponse = await new TestClient(env.baseUrl).get(`/api/users/${ownerId}/animals`);
+	assert.equal(unauthResponse.status, 401);
+
+	const missingUser = await otherClient.get('/api/users/00000000-0000-0000-0000-000000000000/animals');
+	assert.equal(missingUser.status, 404);
 });
 
 test('delning ger en annan användare åtkomst till djuret', async () => {
