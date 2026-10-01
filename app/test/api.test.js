@@ -122,11 +122,48 @@ test('delning ger en annan användare åtkomst till djuret', async () => {
 	const friendView = await friendClient.get(`/api/animals/${created.data.id}`);
 	assert.equal(friendView.status, 200);
 	assert.equal(friendView.data.isOwner, false);
+	assert.equal(friendView.data.ownerUsername, ownerUsername);
+
+	const friendList = await friendClient.get('/api/animals');
+	const sharedEntry = friendList.data.find(animal => animal.id === created.data.id);
+	assert.ok(sharedEntry, 'det delade djuret ska synas i listan');
+	assert.equal(sharedEntry.isOwner, false);
+	assert.equal(sharedEntry.ownerUsername, ownerUsername);
 
 	const friendDelete = await friendClient.delete(`/api/animals/${created.data.id}`);
 	// Appen svarar 404 (inte 403) för icke-ägare för att inte läcka att ett
 	// annat konto äger id:t – matchar samma mönster som GET för otillåten åtkomst.
 	assert.equal(friendDelete.status, 404);
+});
+
+test('listan över användare visar andra konton och delningsstatistik', async () => {
+	const ownerClient = new TestClient(env.baseUrl);
+	const ownerUsername = uniqueUsername('hilda');
+	await ownerClient.post('/api/auth/register', { username: ownerUsername, password: 'test12345' });
+	const created = await ownerClient.post('/api/animals', { name: 'Delningsvän', type: 'Katt' });
+
+	const friendClient = new TestClient(env.baseUrl);
+	const friendUsername = uniqueUsername('ivar');
+	await friendClient.post('/api/auth/register', { username: friendUsername, password: 'test12345' });
+
+	await ownerClient.post(`/api/animals/${created.data.id}/shares`, { username: friendUsername });
+
+	const ownerUsers = await ownerClient.get('/api/users');
+	assert.equal(ownerUsers.status, 200);
+	const friendEntry = ownerUsers.data.find(user => user.username === friendUsername);
+	assert.ok(friendEntry, 'vännen ska finnas med i listan');
+	assert.equal(friendEntry.sharedByMe, 1);
+	assert.equal(friendEntry.sharedWithMe, 0);
+	assert.ok(!ownerUsers.data.some(user => user.username === ownerUsername), 'man ska inte se sig själv i listan');
+
+	const friendUsers = await friendClient.get('/api/users');
+	const ownerEntry = friendUsers.data.find(user => user.username === ownerUsername);
+	assert.ok(ownerEntry, 'ägaren ska finnas med i vännens lista');
+	assert.equal(ownerEntry.sharedByMe, 0);
+	assert.equal(ownerEntry.sharedWithMe, 1);
+
+	const unauthResponse = await new TestClient(env.baseUrl).get('/api/users');
+	assert.equal(unauthResponse.status, 401);
 });
 
 test('oautentiserad åtkomst nekas', async () => {

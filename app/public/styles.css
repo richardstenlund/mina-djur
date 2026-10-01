@@ -33,6 +33,10 @@ button { cursor: pointer; }
 .brand { display: flex; align-items: center; gap: 11px; font-size: 1.05rem; font-weight: 750; letter-spacing: -.03em; }
 .brand-mark { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 12px; background: var(--green-soft); font-size: 1.18rem; }
 .topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-nav { display: flex; align-items: center; gap: 16px; }
+.topbar-nav a { color: var(--muted); font-size: .86rem; font-weight: 700; text-decoration: none; }
+.topbar-nav a:hover { color: var(--green-dark); }
+.topbar-nav a.active { color: var(--green-dark); text-decoration: underline; text-underline-offset: 3px; }
 .local-note { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .84rem; }
 .local-note::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #83a879; }
 .user-chip { display: flex; align-items: center; gap: 9px; font-size: .87rem; color: var(--muted); }
@@ -109,6 +113,16 @@ details.content-panel > summary h2 { margin: 0; font-size: 1.15rem; letter-spaci
 .text-button { padding: 0; border: 0; background: transparent; color: var(--green); font-size: .81rem; font-weight: 750; }
 a.text-button { text-decoration: none; display: inline-flex; align-items: center; }
 .text-button:hover { color: var(--green-dark); text-decoration: underline; }
+.users-panel { padding: 24px; }
+.users-panel h2 { margin: 0 0 16px; font-size: 1.1rem; letter-spacing: -.02em; }
+.user-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 13px; }
+.user-card { display: flex; align-items: center; gap: 13px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
+.user-avatar { flex: 0 0 43px; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 14px; background: var(--green-soft); font-size: 1.2rem; }
+.user-info { min-width: 0; }
+.user-name { margin: 0 0 7px; font-size: .98rem; overflow-wrap: anywhere; }
+.user-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.shared-group { margin-bottom: 30px; }
+.shared-group-title { margin: 0 0 13px; font-size: 1.1rem; letter-spacing: -.02em; }
 .details { border-top: 1px solid #edf0e9; background: #fbfcf9; }
 .details summary { padding: 13px 18px; color: var(--green); cursor: pointer; font-size: .83rem; font-weight: 750; list-style-position: inside; }
 .details-body { padding: 0 18px 18px; }
@@ -232,10 +246,11 @@ a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:f
 @media (max-width: 650px) {
 	.topbar { min-height: 62px; height: auto; padding: 8px 0; }
 	.topbar-inner, .page { width: min(100% - 24px, 520px); }
-	.topbar-inner { gap: 8px; }
+	.topbar-inner { gap: 8px; flex-wrap: wrap; }
 	.brand { gap: 8px; font-size: .96rem; }
 	.brand-mark { width: 34px; height: 34px; }
 	.topbar-right { gap: 7px; }
+	.topbar-nav { order: 3; width: 100%; justify-content: center; gap: 12px; margin-top: 2px; }
 	.user-chip { gap: 4px; font-size: .7rem; }
 	.logout-button { padding: 7px 9px; font-size: .75rem; }
 	main { padding: 22px 0 40px; }

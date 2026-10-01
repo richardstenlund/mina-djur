@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#f6f7f2">
+	<title>Delat med mig – Mina djur</title>
+	<link rel="stylesheet" href="/styles.css">
+	<link rel="manifest" href="/manifest.webmanifest">
+	<link rel="icon" href="/icons/icon-32.png" sizes="32x32" type="image/png">
+	<link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">
+	<link rel="apple-touch-icon" href="/icons/icon-180.png">
+	<script>
+		(function () {
+			try {
+				if (localStorage.getItem('mina-djur-theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+			} catch { /* ignore */ }
+		})();
+	</script>
+</head>
+<body>
+	<header class="topbar">
+		<div class="topbar-inner">
+			<div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Mina djur</span></div>
+			<nav class="topbar-nav" aria-label="Sidor">
+				<a href="/index.html">Mina djur</a>
+				<a href="/shared.html" class="active">Delat med mig</a>
+				<a href="/users.html">Användare</a>
+			</nav>
+			<div class="topbar-right">
+				<button class="logout-button" id="themeToggle" type="button">🌙 Mörkt läge</button>
+				<div class="user-chip">Inloggad som <strong id="usernameLabel">…</strong></div>
+				<button class="logout-button" id="logoutButton" type="button">Logga ut</button>
+			</div>
+		</div>
+	</header>
+	<main class="page">
+		<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+		<section class="welcome" aria-labelledby="page-title">
+			<div>
+				<p class="eyebrow">Delade djur</p>
+				<h1 id="page-title">Delat med mig</h1>
+				<p class="welcome-copy">Här hittar du alla djur som andra användare har gett dig åtkomst till, grupperade efter vem som delat dem.</p>
+			</div>
+		</section>
+
+		<p id="emptyState" class="field-hint hidden">Inga djur har delats med dig ännu. Be ägaren lägga till ditt användarnamn under "Dela djurprofil" på djurets profilsida.</p>
+		<div id="sharedGroups"></div>
+	</main>
+	<script src="/example-images.js"></script>
+	<script src="/dark-mode.js"></script>
+	<script src="/pwa-register.js"></script>
+	<script src="/shared.js"></script>
+</body>
+</html>

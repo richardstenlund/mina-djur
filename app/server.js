@@ -5,6 +5,7 @@ const pgSession = require('connect-pg-simple')(session);
 const { pool, waitForDatabase, runMigrations } = require('./db/pool');
 const authRoutes = require('./routes/auth');
 const animalsRoutes = require('./routes/animals');
+const usersRoutes = require('./routes/users');
 
 const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET;
@@ -49,6 +50,7 @@ async function start() {
 
 	app.use('/api/auth', authRoutes);
 	app.use('/api/animals', animalsRoutes);
+	app.use('/api/users', usersRoutes);
 
 	app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

@@ -103,6 +103,20 @@ Där kan du:
 Personer som fått delad åtkomst kan använda djurets funktioner och se dess
 uppgifter. Dokument och övrigt innehåll hanteras från respektive djurprofil.
 
+### Användare och delning
+
+Via menyn i toppen når du två extra sidor:
+
+- **Användare** (`/users.html`) – listar alla konton som finns på sidan (bara
+  användarnamn, inget annat) så att du enkelt ser vem du kan dela ett djur
+  med. Listan visar även hur många djur ni redan delar med varandra.
+- **Delat med mig** (`/shared.html`) – samlar alla djur som andra användare
+  gett dig åtkomst till, grupperade efter vem som ägare djuret. Härifrån kan
+  du öppna djurets fullständiga profil precis som vanligt.
+
+På en delad djurprofil visas även en liten "Delad av …"-etikett bredvid
+djurets namn, så det alltid syns vem som egentligen äger djuret.
+
 Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
 startsidan. Innan du laddar upp en egen bild visas en lokal exempelillustration
 för djurarten. Originalillustrationerna ligger i
@@ -209,7 +223,7 @@ npm test
 
 Testerna täcker bland annat registrering/inloggning, att en användare
 aldrig kan se eller ändra en annan användares djur, delning mellan
-användare, medicin/utgifter/påminnelser och rate limiting.
+användare, användarlistan, medicin/utgifter/påminnelser och rate limiting.
 
 ## Installera som app (PWA)
 

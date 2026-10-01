@@ -266,8 +266,10 @@ router.get('/', async (req, res) => {
 		const animalColumns = ANIMAL_COLUMNS.split(',').map(column => `a.${column.trim()}`).join(', ');
 		const animalsResult = await pool.query(
 			`SELECT ${animalColumns},
-				a.user_id = $1 AS is_owner
+				a.user_id = $1 AS is_owner,
+				u.username AS owner_username
 			 FROM animals a
+			 JOIN users u ON u.id = a.user_id
 			 WHERE a.user_id = $1 OR EXISTS (
 				SELECT 1 FROM animal_shares s WHERE s.animal_id = a.id AND s.user_id = $1
 			 )
@@ -329,6 +331,7 @@ router.get('/', async (req, res) => {
 		const animals = animalsResult.rows.map(row => ({
 			...formatAnimal(row),
 			isOwner: row.is_owner,
+			ownerUsername: row.owner_username,
 			records: recordsByAnimal.get(row.id) || [],
 			coverPhotoUrl: coverPhotoByAnimal.has(row.id)
 				? `/api/animals/${row.id}/photos/${coverPhotoByAnimal.get(row.id)}/file`
@@ -435,8 +438,10 @@ router.get('/:animalId', async (req, res) => {
 	try {
 		const animalResult = await pool.query(
 			`SELECT ${ANIMAL_COLUMNS.split(',').map(column => `a.${column.trim()}`).join(', ')},
-				a.user_id = $2 AS is_owner
+				a.user_id = $2 AS is_owner,
+				u.username AS owner_username
 			 FROM animals a
+			 JOIN users u ON u.id = a.user_id
 			 WHERE a.id = $1 AND (a.user_id = $2 OR EXISTS (
 				SELECT 1 FROM animal_shares s WHERE s.animal_id = a.id AND s.user_id = $2
 			 ))`,
@@ -503,6 +508,7 @@ router.get('/:animalId', async (req, res) => {
 		res.json({
 			...formatAnimal(row),
 			isOwner: row.is_owner,
+			ownerUsername: row.owner_username,
 			records,
 			photos: photosResult.rows.map(photo => ({
 				id: photo.id,

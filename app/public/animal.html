@@ -22,9 +22,14 @@
 	<header class="topbar">
 		<div class="topbar-inner">
 			<div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Mina djur</span></div>
+			<nav class="topbar-nav no-print" aria-label="Sidor">
+				<a href="/index.html">Mina djur</a>
+				<a href="/shared.html">Delat med mig</a>
+				<a href="/users.html">Användare</a>
+			</nav>
 			<div class="topbar-right">
 				<button class="logout-button no-print" id="themeToggle" type="button">🌙 Mörkt läge</button>
-				<a class="logout-button" href="/">Till mina djur</a>
+				<a class="logout-button no-print" href="/">Till mina djur</a>
 				<button class="logout-button" id="logoutButton" type="button">Logga ut</button>
 			</div>
 		</div>
@@ -38,6 +43,7 @@
 				<div>
 					<h1 id="profile-title">Laddar...</h1>
 					<span class="animal-type" id="profileType"></span>
+					<span class="shared-badge hidden" id="profileOwnerBadge"></span>
 				</div>
 				<button class="text-button no-print" id="printPassportButton" type="button">📄 Skriv ut / spara som PDF</button>
 			</div>

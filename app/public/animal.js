@@ -128,6 +128,13 @@
 		if (animal.sex) typeDetails.push(`${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`);
 		if (animal.neutered) typeDetails.push('🔒 Kastrerad');
 		document.querySelector('#profileType').textContent = typeDetails.join(' · ');
+		const ownerBadge = document.querySelector('#profileOwnerBadge');
+		if (animal.isOwner === false && animal.ownerUsername) {
+			ownerBadge.textContent = `Delad av ${animal.ownerUsername}`;
+			ownerBadge.classList.remove('hidden');
+		} else {
+			ownerBadge.classList.add('hidden');
+		}
 		let icon = document.querySelector('#profileIcon');
 		const exampleImage = getAnimalExampleImage(animal.type);
 		if (animal.photos.length || exampleImage) {
