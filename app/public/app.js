@@ -1,5 +1,5 @@
 (() => {
-	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Övrigt'];
+	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Hälsodagbok', 'Övrigt'];
 	const typeIcons = {
 		Katt: '🐈', Hund: '🐕', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹',
 		Råtta: '🐭', Mus: '🐭', Gerbil: '🐭', Chinchilla: '🐭', Degu: '🐭',
@@ -190,6 +190,7 @@
 		}
 		const text = element('div');
 		text.append(element('h3', 'animal-name', animal.name), element('span', 'animal-type', animal.breed ? `${animal.type} · ${animal.breed}` : animal.type));
+		if (animal.isOwner === false) text.append(element('span', 'shared-badge', 'Delad med dig'));
 
 		const meta = element('div', 'animal-meta');
 		if (animal.sex) meta.append(element('span', '', `${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`));
@@ -216,11 +217,14 @@
 		if (animal.info) text.append(element('p', 'animal-info', animal.info));
 		identity.append(text);
 
-		const removeAnimal = element('button', 'icon-button', 'Ta bort');
-		removeAnimal.type = 'button';
-		removeAnimal.dataset.deleteAnimal = animal.id;
-		removeAnimal.setAttribute('aria-label', `Ta bort ${animal.name}`);
-		main.append(identity, removeAnimal);
+		if (animal.isOwner !== false) {
+			const removeAnimal = element('button', 'icon-button', 'Ta bort');
+			removeAnimal.type = 'button';
+			removeAnimal.dataset.deleteAnimal = animal.id;
+			removeAnimal.setAttribute('aria-label', `Ta bort ${animal.name}`);
+			main.append(identity, removeAnimal);
+		}
+		main.append(identity);
 		card.append(main);
 
 		const actions = element('div', 'card-actions');

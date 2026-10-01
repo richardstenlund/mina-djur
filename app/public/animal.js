@@ -1,5 +1,5 @@
 (() => {
-	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Övrigt'];
+	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Hälsodagbok', 'Övrigt'];
 	const REMINDER_LABELS = { Kloklippning: '✂️ Kloklippning', Vaccination: '💉 Vaccination', Avmaskning: '💊 Avmaskning' };
 	const typeIcons = {
 		Katt: '🐈', Hund: '🐕', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹',
@@ -19,10 +19,22 @@
 	const exportLink = document.querySelector('#exportLink');
 	const breedInput = document.querySelector('#breed');
 	const breedOptions = document.querySelector('#breed-options');
+	const medicationForm = document.querySelector('#medicationForm');
+	const medicationList = document.querySelector('#medicationList');
+	const costForm = document.querySelector('#costForm');
+	const costList = document.querySelector('#costList');
+	const expenseTotal = document.querySelector('#expenseTotal');
+	const documentForm = document.querySelector('#documentForm');
+	const documentInput = document.querySelector('#documentInput');
+	const documentList = document.querySelector('#documentList');
+	const sharingPanel = document.querySelector('#sharingPanel');
+	const shareForm = document.querySelector('#shareForm');
+	const shareList = document.querySelector('#shareList');
 
 	const params = new URLSearchParams(window.location.search);
 	const animalId = params.get('id');
 	let animal = null;
+	let shareManagementEnabled = false;
 
 	function updateBreedOptions(type) {
 		breedOptions.replaceChildren();
@@ -47,7 +59,7 @@
 	if (!animalId) {
 		showNotice('Inget djur valt. Gå till startsidan och klicka på "Öppna profil" på ett djur.');
 		document.querySelector('.profile-panel').classList.add('hidden');
-		document.querySelector('.content-panel').classList.add('hidden');
+		document.querySelectorAll('.content-panel').forEach(panel => panel.classList.add('hidden'));
 	}
 
 	function clearNotice() {
@@ -67,7 +79,9 @@
 		}
 		if (!response.ok) {
 			const data = await response.json().catch(() => ({}));
-			throw new Error(data.error || 'Något gick fel.');
+			const error = new Error(data.error || 'Något gick fel.');
+			error.status = response.status;
+			throw error;
 		}
 		if (response.status === 204) return null;
 		return response.json();
@@ -89,6 +103,22 @@
 	function today() {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+	}
+
+	function isOwner() {
+		if (!animal) return false;
+		if (typeof animal.isOwner === 'boolean') return animal.isOwner;
+		if (animal.isOwner === true || animal.canManageShares === true || animal.owner === true || animal.role === 'owner') return true;
+		if (animal.isOwner === false || animal.canManageShares === false || animal.owner === false || animal.role === 'collaborator') return false;
+		return null;
+	}
+
+	function currency(amount) {
+		return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK' }).format(Number(amount) || 0);
+	}
+
+	function safelyShowError(error) {
+		showNotice(error && error.message ? error.message : 'Något gick fel. Försök igen.');
 	}
 
 	function renderProfile() {
@@ -268,6 +298,16 @@
 			: record.type;
 		content.append(element('p', 'log-title', titleText));
 		if (record.note) content.append(element('p', 'log-note', record.note));
+		[
+			['Diagnos', record.diagnosis],
+			['Behandling', record.treatment],
+			['Uppföljning', record.followUpDate ? formatDate(record.followUpDate) : ''],
+			['Symtom', record.symptoms],
+			['Aptit', record.appetite],
+			['Humör', record.mood]
+		].forEach(([label, value]) => {
+			if (value) content.append(element('p', 'log-note', `${label}: ${value}`));
+		});
 		const date = element('span', 'log-date', formatDate(record.date));
 		row.append(content, date);
 		const remove = element('button', 'delete-log', 'Ta bort');
@@ -284,6 +324,178 @@
 			return;
 		}
 		animal.records.slice().sort((a, b) => b.date.localeCompare(a.date)).forEach(record => logList.append(makeRecordItem(record)));
+	}
+
+	function renderMedications() {
+		medicationList.replaceChildren();
+		const medications = animal.medications || [];
+		if (!medications.length) {
+			medicationList.append(element('p', 'field-hint', 'Inga läkemedel tillagda ännu.'));
+			return;
+		}
+
+		const soonDate = new Date(`${today()}T00:00:00`);
+		soonDate.setDate(soonDate.getDate() + 7);
+		const soonLimit = `${soonDate.getFullYear()}-${String(soonDate.getMonth() + 1).padStart(2, '0')}-${String(soonDate.getDate()).padStart(2, '0')}`;
+		medications.slice().sort((a, b) => String(a.nextDose || a.startDate).localeCompare(String(b.nextDose || b.startDate))).forEach(medication => {
+			const row = element('article', 'feature-item');
+			const details = element('div', 'feature-item-main');
+			details.append(element('h3', 'feature-item-title', medication.name));
+			details.append(element('p', 'feature-item-copy', `${medication.dosage || 'Dos saknas'} · ${medication.frequency || 'Frekvens saknas'}`));
+			details.append(element('p', 'feature-item-copy', `Start: ${formatDate(medication.startDate)}${medication.endDate ? ` · Slut: ${formatDate(medication.endDate)}` : ''}`));
+			if (medication.note) details.append(element('p', 'feature-item-copy', medication.note));
+			const treatmentEnded = medication.endDate && medication.endDate < today();
+			if (treatmentEnded) {
+				details.append(element('span', 'reminder-badge ok medication-reminder', `Behandling avslutad · ${formatDate(medication.endDate)}`));
+			} else if (medication.nextDose) {
+				const dueToday = medication.nextDose === today();
+				const overdue = medication.nextDose < today();
+				const dueSoon = !dueToday && !overdue && medication.nextDose <= soonLimit;
+				const dueClass = overdue ? 'overdue' : dueToday || dueSoon ? 'soon' : 'ok';
+				const dueText = overdue
+					? `Dos försenad · ${formatDate(medication.nextDose)}`
+					: dueToday
+						? `Dos idag · ${formatDate(medication.nextDose)}`
+						: dueSoon
+							? `Dos snart · ${formatDate(medication.nextDose)}`
+							: `Nästa dos · ${formatDate(medication.nextDose)}`;
+				details.append(element('span', `reminder-badge ${dueClass} medication-reminder`, dueText));
+			} else {
+				details.append(element('span', 'reminder-badge medication-reminder', 'Påminnelse saknas · ange nästa dos'));
+			}
+			const actions = element('div', 'feature-actions medication-actions');
+			const edit = element('button', 'text-button', 'Redigera');
+			edit.type = 'button';
+			edit.dataset.editMedication = medication.id;
+			edit.setAttribute('aria-expanded', 'false');
+			edit.setAttribute('aria-label', `Redigera ${medication.name}`);
+			const remove = element('button', 'delete-log feature-delete', 'Ta bort');
+			remove.type = 'button';
+			remove.dataset.deleteMedication = medication.id;
+			remove.setAttribute('aria-label', `Ta bort ${medication.name}`);
+			actions.append(edit, remove);
+			row.append(details, actions);
+
+			const editForm = element('form', 'log-form feature-form medication-edit-form hidden');
+			editForm.dataset.medicationId = medication.id;
+			const addEditField = (name, labelText, type, value, required = false) => {
+				const id = `edit-medication-${medication.id}-${name}`;
+				const label = element('label', name === 'note' ? 'full' : '', labelText);
+				label.htmlFor = id;
+				const field = type === 'textarea'
+					? element('textarea', name === 'note' ? 'full' : '')
+					: document.createElement('input');
+				field.id = id;
+				field.name = name;
+				field.value = value || '';
+				field.maxLength = name === 'note' ? 500 : 120;
+				if (type !== 'textarea') field.type = type;
+				field.required = required;
+				editForm.append(label, field);
+			};
+			addEditField('name', 'Läkemedel', 'text', medication.name, true);
+			addEditField('dosage', 'Dos', 'text', medication.dosage, true);
+			addEditField('frequency', 'Frekvens', 'text', medication.frequency, true);
+			addEditField('startDate', 'Startdatum', 'date', medication.startDate, true);
+			addEditField('endDate', 'Slutdatum (valfritt)', 'date', medication.endDate);
+			addEditField('nextDose', 'Nästa dos (valfritt)', 'date', medication.nextDose);
+			addEditField('note', 'Anteckning (valfritt)', 'textarea', medication.note);
+			const save = element('button', 'primary full', 'Spara ändringar');
+			save.type = 'submit';
+			const cancel = element('button', 'text-button full', 'Avbryt');
+			cancel.type = 'button';
+			cancel.dataset.cancelMedicationEdit = medication.id;
+			editForm.append(save, cancel);
+			row.append(editForm);
+			medicationList.append(row);
+		});
+	}
+
+	function renderCosts() {
+		costList.replaceChildren();
+		const costs = animal.costs || [];
+		const total = costs.reduce((sum, cost) => sum + (Number(cost.amount) || 0), 0);
+		expenseTotal.textContent = `Totalt: ${currency(total)}`;
+		if (!costs.length) {
+			costList.append(element('p', 'field-hint', 'Inga utgifter registrerade ännu.'));
+			return;
+		}
+		costs.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach(cost => {
+			const row = element('article', 'feature-item');
+			const details = element('div', 'feature-item-main');
+			details.append(element('h3', 'feature-item-title', `${cost.category} · ${currency(cost.amount)}`));
+			details.append(element('p', 'feature-item-copy', formatDate(cost.date)));
+			if (cost.note) details.append(element('p', 'feature-item-copy', cost.note));
+			const remove = element('button', 'delete-log feature-delete', 'Ta bort');
+			remove.type = 'button';
+			remove.dataset.deleteCost = cost.id;
+			remove.setAttribute('aria-label', `Ta bort utgift ${cost.category}`);
+			row.append(details, remove);
+			costList.append(row);
+		});
+	}
+
+	function renderDocuments() {
+		documentList.replaceChildren();
+		const documents = animal.documents || [];
+		if (!documents.length) {
+			documentList.append(element('p', 'field-hint', 'Inga dokument uppladdade ännu.'));
+			return;
+		}
+		documents.slice().sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt))).forEach(documentRecord => {
+			const row = element('article', 'feature-item');
+			const details = element('div', 'feature-item-main');
+			details.append(element('h3', 'feature-item-title', documentRecord.name));
+			if (documentRecord.uploadedAt) details.append(element('p', 'feature-item-copy', `Uppladdat ${formatDate(String(documentRecord.uploadedAt).slice(0, 10))}`));
+			const actions = element('div', 'feature-actions');
+			const download = element('a', 'text-button', 'Hämta');
+			download.href = `/api/animals/${encodeURIComponent(animalId)}/documents/${encodeURIComponent(documentRecord.id)}/file`;
+			download.setAttribute('aria-label', `Hämta dokumentet ${documentRecord.name}`);
+			const remove = element('button', 'delete-log feature-delete', 'Ta bort');
+			remove.type = 'button';
+			remove.dataset.deleteDocument = documentRecord.id;
+			remove.setAttribute('aria-label', `Ta bort dokumentet ${documentRecord.name}`);
+			actions.append(download, remove);
+			row.append(details, actions);
+			documentList.append(row);
+		});
+	}
+
+	async function loadShares() {
+		if (isOwner() === false) {
+			sharingPanel.classList.add('hidden');
+			return;
+		}
+		try {
+			const shares = await api(`/api/animals/${encodeURIComponent(animalId)}/shares`);
+			shareManagementEnabled = true;
+			sharingPanel.classList.remove('hidden');
+			animal.shares = Array.isArray(shares) ? shares : [];
+			renderShares();
+		} catch (error) {
+			shareManagementEnabled = false;
+			sharingPanel.classList.add('hidden');
+			if (isOwner() === true || (error.status !== 403 && error.status !== 404)) safelyShowError(error);
+		}
+	}
+
+	function renderShares() {
+		shareList.replaceChildren();
+		const shares = animal.shares || [];
+		if (!shares.length) {
+			shareList.append(element('p', 'field-hint', 'Profilen delas inte med någon ännu.'));
+			return;
+		}
+		shares.forEach(share => {
+			const row = element('div', 'feature-item share-item');
+			row.append(element('strong', 'feature-item-title', share.username));
+			const remove = element('button', 'delete-log feature-delete', 'Ta bort åtkomst');
+			remove.type = 'button';
+			remove.dataset.deleteShare = share.id;
+			remove.setAttribute('aria-label', `Ta bort åtkomst för ${share.username}`);
+			row.append(remove);
+			shareList.append(row);
+		});
 	}
 
 	function buildLogForm() {
@@ -328,20 +540,71 @@
 		note.id = 'record-note';
 		note.name = 'note';
 		note.maxLength = 500;
+
+		function makeField(name, labelText, type = 'textarea') {
+			const id = `record-${name}`;
+			const label = element('label', 'full', labelText);
+			label.htmlFor = id;
+			const field = type === 'textarea' ? element('textarea', 'full') : document.createElement('input');
+			field.id = id;
+			field.name = name;
+			field.maxLength = 500;
+			if (type !== 'textarea') field.type = type;
+			field.classList.add('full', 'record-detail', `record-detail-${name}`);
+			return { label, field };
+		}
+		const vetFields = [
+			makeField('diagnosis', 'Diagnos'),
+			makeField('treatment', 'Behandling'),
+			makeField('followUpDate', 'Datum för uppföljning', 'date')
+		];
+		const healthFields = [
+			makeField('symptoms', 'Symtom'),
+			makeField('appetite', 'Aptit'),
+			makeField('mood', 'Humör')
+		];
+		const details = [...vetFields, ...healthFields];
 		const save = element('button', 'primary full', 'Spara anteckning');
 		save.type = 'submit';
 
-		logForm.append(typeLabel, recordType, dateLabel, date, weightLabel, weight, noteLabel, note, save);
+		logForm.append(typeLabel, recordType, dateLabel, date, weightLabel, weight, noteLabel, note);
+		details.forEach(({ label, field }) => {
+			label.classList.add('record-detail');
+			logForm.append(label, field);
+		});
+		logForm.append(save);
+		recordType.addEventListener('change', () => {
+			const isVet = recordType.value === 'Veterinärbesök';
+			const isHealth = recordType.value === 'Hälsodagbok';
+			vetFields.forEach(({ label, field }) => {
+				label.classList.toggle('hidden', !isVet);
+				field.classList.toggle('hidden', !isVet);
+			});
+			healthFields.forEach(({ label, field }) => {
+				label.classList.toggle('hidden', !isHealth);
+				field.classList.toggle('hidden', !isHealth);
+			});
+		});
 		recordType.dispatchEvent(new Event('change'));
 	}
 
 	async function load() {
 		try {
 			animal = await api(`/api/animals/${encodeURIComponent(animalId)}`);
+			animal.records = Array.isArray(animal.records) ? animal.records : [];
+			animal.photos = Array.isArray(animal.photos) ? animal.photos : [];
+			animal.medications = Array.isArray(animal.medications) ? animal.medications : [];
+			animal.costs = Array.isArray(animal.costs) ? animal.costs : [];
+			animal.documents = Array.isArray(animal.documents) ? animal.documents : [];
+			animal.shares = Array.isArray(animal.shares) ? animal.shares : [];
 			renderProfile();
 			renderRecords();
 			renderReminders();
 			renderWeightChart();
+			renderMedications();
+			renderCosts();
+			renderDocuments();
+			await loadShares();
 		} catch (error) {
 			showNotice(error.message);
 		}
@@ -434,11 +697,23 @@
 		clearNotice();
 		const formData = new FormData(logForm);
 		const recordType = String(formData.get('recordType'));
+		const followUpDate = String(formData.get('followUpDate') || '');
+		if (recordType === 'Veterinärbesök' && followUpDate && followUpDate < String(formData.get('date'))) {
+			showNotice('Uppföljningsdatumet kan inte vara före veterinärbesöket.');
+			document.querySelector('#record-followUpDate').focus();
+			return;
+		}
 		const payload = {
 			type: recordType,
 			date: String(formData.get('date')),
 			weight: recordType === 'Vikt' ? Number(String(formData.get('weight')).replace(',', '.')) : null,
-			note: String(formData.get('note') || '').trim()
+			note: String(formData.get('note') || '').trim(),
+			diagnosis: String(formData.get('diagnosis') || '').trim(),
+			treatment: String(formData.get('treatment') || '').trim(),
+			followUpDate: followUpDate || null,
+			symptoms: String(formData.get('symptoms') || '').trim(),
+			appetite: String(formData.get('appetite') || '').trim(),
+			mood: String(formData.get('mood') || '').trim()
 		};
 		const submitButton = logForm.querySelector('button[type="submit"]');
 		submitButton.disabled = true;
@@ -454,6 +729,250 @@
 			showNotice(error.message);
 		} finally {
 			submitButton.disabled = false;
+		}
+	});
+
+	medicationForm.addEventListener('submit', async event => {
+		event.preventDefault();
+		clearNotice();
+		const formData = new FormData(medicationForm);
+		const startDate = String(formData.get('startDate') || '');
+		const endDate = String(formData.get('endDate') || '');
+		if (endDate && endDate < startDate) {
+			showNotice('Slutdatumet kan inte vara före startdatumet.');
+			document.querySelector('#medicationEndDate').focus();
+			return;
+		}
+		const payload = {
+			name: String(formData.get('name') || '').trim(),
+			dosage: String(formData.get('dosage') || '').trim(),
+			frequency: String(formData.get('frequency') || '').trim(),
+			startDate,
+			endDate: endDate || null,
+			nextDose: String(formData.get('nextDose') || '') || null,
+			note: String(formData.get('note') || '').trim()
+		};
+		if (!payload.name || !payload.dosage || !payload.frequency || !startDate) {
+			showNotice('Fyll i läkemedel, dos, frekvens och startdatum.');
+			return;
+		}
+		const button = medicationForm.querySelector('button[type="submit"]');
+		button.disabled = true;
+		try {
+			const medication = await api(`/api/animals/${encodeURIComponent(animalId)}/medications`, {
+				method: 'POST',
+				body: JSON.stringify(payload)
+			});
+			animal.medications.push(medication);
+			renderMedications();
+			medicationForm.reset();
+			document.querySelector('#medicationStartDate').value = today();
+		} catch (error) {
+			safelyShowError(error);
+		} finally {
+			button.disabled = false;
+		}
+	});
+
+	medicationList.addEventListener('click', async event => {
+		const editButton = event.target.closest('button[data-edit-medication]');
+		if (editButton) {
+			const row = editButton.closest('.feature-item');
+			const editForm = row.querySelector('.medication-edit-form');
+			const expanded = editButton.getAttribute('aria-expanded') === 'true';
+			editButton.setAttribute('aria-expanded', String(!expanded));
+			editForm.classList.toggle('hidden', expanded);
+			if (!expanded) editForm.querySelector('input')?.focus();
+			return;
+		}
+		const cancelButton = event.target.closest('button[data-cancel-medication-edit]');
+		if (cancelButton) {
+			const row = cancelButton.closest('.feature-item');
+			row.querySelector('.medication-edit-form').classList.add('hidden');
+			row.querySelector('[data-edit-medication]')?.setAttribute('aria-expanded', 'false');
+			return;
+		}
+		const button = event.target.closest('button[data-delete-medication]');
+		if (!button || !confirm('Ta bort medicinen från listan?')) return;
+		try {
+			await api(`/api/animals/${encodeURIComponent(animalId)}/medications/${encodeURIComponent(button.dataset.deleteMedication)}`, { method: 'DELETE' });
+			animal.medications = animal.medications.filter(item => String(item.id) !== button.dataset.deleteMedication);
+			renderMedications();
+		} catch (error) {
+			safelyShowError(error);
+		}
+	});
+
+	medicationList.addEventListener('submit', async event => {
+		const form = event.target.closest('.medication-edit-form');
+		if (!form) return;
+		event.preventDefault();
+		clearNotice();
+		const formData = new FormData(form);
+		const startDate = String(formData.get('startDate') || '');
+		const endDate = String(formData.get('endDate') || '');
+		if (endDate && endDate < startDate) {
+			showNotice('Slutdatumet kan inte vara före startdatumet.');
+			form.querySelector('[name="endDate"]').focus();
+			return;
+		}
+		const payload = {
+			name: String(formData.get('name') || '').trim(),
+			dosage: String(formData.get('dosage') || '').trim(),
+			frequency: String(formData.get('frequency') || '').trim(),
+			startDate,
+			endDate: endDate || null,
+			nextDose: String(formData.get('nextDose') || '') || null,
+			note: String(formData.get('note') || '').trim()
+		};
+		if (!payload.name || !payload.dosage || !payload.frequency || !payload.startDate) {
+			showNotice('Fyll i läkemedel, dos, frekvens och startdatum.');
+			return;
+		}
+		const button = form.querySelector('button[type="submit"]');
+		button.disabled = true;
+		try {
+			const updated = await api(`/api/animals/${encodeURIComponent(animalId)}/medications/${encodeURIComponent(form.dataset.medicationId)}`, {
+				method: 'PUT',
+				body: JSON.stringify(payload)
+			});
+			const updatedMedication = { ...payload, ...(updated || {}), id: form.dataset.medicationId };
+			animal.medications = animal.medications.map(item => String(item.id) === form.dataset.medicationId ? updatedMedication : item);
+			renderMedications();
+			showNotice('Medicinen är uppdaterad.');
+		} catch (error) {
+			safelyShowError(error);
+		} finally {
+			button.disabled = false;
+		}
+	});
+
+	costForm.addEventListener('submit', async event => {
+		event.preventDefault();
+		clearNotice();
+		const formData = new FormData(costForm);
+		const amount = Number(String(formData.get('amount') || '').replace(',', '.'));
+		if (!Number.isFinite(amount) || amount <= 0) {
+			showNotice('Ange ett belopp som är större än noll.');
+			document.querySelector('#costAmount').focus();
+			return;
+		}
+		const payload = {
+			date: String(formData.get('date') || ''),
+			category: String(formData.get('category') || '').trim(),
+			amount,
+			note: String(formData.get('note') || '').trim()
+		};
+		if (!payload.date || !payload.category) {
+			showNotice('Fyll i datum och kategori för utgiften.');
+			return;
+		}
+		const button = costForm.querySelector('button[type="submit"]');
+		button.disabled = true;
+		try {
+			const cost = await api(`/api/animals/${encodeURIComponent(animalId)}/costs`, {
+				method: 'POST',
+				body: JSON.stringify(payload)
+			});
+			animal.costs.push(cost);
+			renderCosts();
+			costForm.reset();
+			document.querySelector('#costDate').value = today();
+		} catch (error) {
+			safelyShowError(error);
+		} finally {
+			button.disabled = false;
+		}
+	});
+
+	costList.addEventListener('click', async event => {
+		const button = event.target.closest('button[data-delete-cost]');
+		if (!button || !confirm('Ta bort den här utgiften?')) return;
+		try {
+			await api(`/api/animals/${encodeURIComponent(animalId)}/costs/${encodeURIComponent(button.dataset.deleteCost)}`, { method: 'DELETE' });
+			animal.costs = animal.costs.filter(item => String(item.id) !== button.dataset.deleteCost);
+			renderCosts();
+		} catch (error) {
+			safelyShowError(error);
+		}
+	});
+
+	documentForm.addEventListener('submit', async event => {
+		event.preventDefault();
+		clearNotice();
+		const file = documentInput.files[0];
+		if (!file) {
+			showNotice('Välj ett dokument att ladda upp.');
+			return;
+		}
+		if (file.size > 10 * 1024 * 1024) {
+			showNotice('Dokumentet är för stort. Maximal filstorlek är 10 MB.');
+			documentInput.focus();
+			return;
+		}
+		const formData = new FormData();
+		formData.append('document', file);
+		const button = documentForm.querySelector('button[type="submit"]');
+		button.disabled = true;
+		try {
+			const documentRecord = await api(`/api/animals/${encodeURIComponent(animalId)}/documents`, { method: 'POST', body: formData });
+			animal.documents.push(documentRecord);
+			renderDocuments();
+			documentForm.reset();
+		} catch (error) {
+			safelyShowError(error);
+		} finally {
+			button.disabled = false;
+		}
+	});
+
+	documentList.addEventListener('click', async event => {
+		const button = event.target.closest('button[data-delete-document]');
+		if (!button || !confirm('Ta bort dokumentet permanent?')) return;
+		try {
+			await api(`/api/animals/${encodeURIComponent(animalId)}/documents/${encodeURIComponent(button.dataset.deleteDocument)}`, { method: 'DELETE' });
+			animal.documents = animal.documents.filter(item => String(item.id) !== button.dataset.deleteDocument);
+			renderDocuments();
+		} catch (error) {
+			safelyShowError(error);
+		}
+	});
+
+	shareForm.addEventListener('submit', async event => {
+		event.preventDefault();
+		clearNotice();
+		if (!shareManagementEnabled) return;
+		const username = document.querySelector('#shareUsername').value.trim();
+		if (!/^[A-Za-z0-9_.-]{3,64}$/.test(username)) {
+			showNotice('Ange ett giltigt användarnamn med 3–32 bokstäver, siffror, punkt, bindestreck eller understreck.');
+			return;
+		}
+		const button = shareForm.querySelector('button[type="submit"]');
+		button.disabled = true;
+		try {
+			await api(`/api/animals/${encodeURIComponent(animalId)}/shares`, {
+				method: 'POST',
+				body: JSON.stringify({ username })
+			});
+			shareForm.reset();
+			await loadShares();
+			showNotice(`Profilen delas nu med ${username}.`);
+		} catch (error) {
+			safelyShowError(error);
+		} finally {
+			button.disabled = false;
+		}
+	});
+
+	shareList.addEventListener('click', async event => {
+		const button = event.target.closest('button[data-delete-share]');
+		if (!button || !shareManagementEnabled || !confirm('Ta bort den här personens åtkomst till profilen?')) return;
+		try {
+			await api(`/api/animals/${encodeURIComponent(animalId)}/shares/${encodeURIComponent(button.dataset.deleteShare)}`, { method: 'DELETE' });
+			animal.shares = animal.shares.filter(share => String(share.id) !== button.dataset.deleteShare);
+			renderShares();
+		} catch (error) {
+			safelyShowError(error);
 		}
 	});
 
@@ -500,5 +1019,7 @@
 	});
 
 	buildLogForm();
+	document.querySelector('#medicationStartDate').value = today();
+	document.querySelector('#costDate').value = today();
 	if (animalId) load();
 })();

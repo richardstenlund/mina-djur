@@ -79,6 +79,7 @@ input::placeholder, textarea::placeholder { color: #a2aaa1; }
 .reminder-badge { padding: 3px 9px; border-radius: 999px; font-size: .74rem; font-weight: 700; }
 .reminder-badge.overdue { background: #fbe4e4; color: #a33b3b; }
 .reminder-badge.soon { background: #fdf1d8; color: #8a6412; }
+.shared-badge { display: inline-flex; align-items: center; margin-left: 7px; padding: 3px 9px; border: 1px solid #d8e4ed; border-radius: 999px; background: #eef5fa; color: #45657d; font-size: .7rem; font-weight: 750; line-height: 1.3; vertical-align: middle; }
 .animal-info { max-width: 540px; margin: 10px 0 0; color: #5f6a61; font-size: .86rem; line-height: 1.5; white-space: pre-wrap; }
 .icon-button { flex: 0 0 auto; align-self: flex-start; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #879087; font-size: .8rem; }
 .icon-button:hover { background: #fff1ee; color: #a94e40; }
@@ -135,6 +136,36 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 
 /* Viktgraf */
 .weight-chart-svg { width: 100%; height: auto; max-height: 220px; }
+
+/* Hälsa, utgifter, dokument och delning */
+.optional { color: var(--muted); font-weight: 400; }
+.record-detail { grid-column: 1 / -1; }
+.record-detail.hidden { display: none !important; }
+.feature-list { display: grid; gap: 0; margin-top: 14px; }
+.feature-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 3px; border-bottom: 1px solid #edf0e9; }
+.feature-item:last-child { border-bottom: 0; }
+.feature-item-main { min-width: 0; }
+.feature-item-title { margin: 0; color: var(--ink); font-size: .9rem; font-weight: 750; overflow-wrap: anywhere; }
+.feature-item-copy { margin: 5px 0 0; color: var(--muted); font-size: .81rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.feature-item .reminder-badge { display: inline-block; margin-top: 8px; }
+.medication-reminder { font-size: .78rem; }
+.medication-actions { align-items: flex-start; }
+.medication-edit-form { flex: 1 0 100%; width: 100%; margin-top: 10px; }
+.feature-delete { flex: 0 0 auto; min-height: 36px; padding: 6px 9px; border-radius: 8px; }
+.feature-delete:hover { background: #fff1ee; color: #a94e40; }
+.feature-actions { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+.feature-actions .text-button { min-height: 36px; }
+.expense-total { margin: 0; color: var(--green-dark); font-size: .95rem; font-weight: 800; }
+.share-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 0 12px; max-width: 680px; margin-top: 16px; }
+.share-form label, .share-form .field-hint { grid-column: 1; }
+.share-form .primary { grid-column: 2; grid-row: 1 / span 3; width: auto; min-width: 190px; margin: 0 0 1px; padding-inline: 16px; }
+.subheading { margin: 24px 0 4px; font-size: .92rem; }
+.share-item { align-items: center; }
+.share-item .feature-item-title { font-size: .86rem; }
+a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+	outline: 3px solid #7fa18a;
+	outline-offset: 2px;
+}
 
 /* Login / registrering */
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
@@ -210,6 +241,10 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 	.log-form label { margin-top: 10px; }
 	.log-form label:first-child { margin-top: 2px; }
 	.log-form .primary { min-height: 44px; }
+	.share-form { grid-template-columns: 1fr; }
+	.share-form .primary { grid-column: 1; grid-row: auto; width: 100%; margin-top: 12px; }
+	.feature-item { gap: 9px; }
+	.feature-actions { flex-direction: column; align-items: flex-end; gap: 4px; }
 	.list-heading { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 15px; }
 	.list-title { flex-wrap: wrap; }
 	.search, .search-wrap { width: 100%; }

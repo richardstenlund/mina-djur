@@ -145,6 +145,87 @@
 			<form id="logForm" class="log-form"></form>
 			<div id="logList" class="log-list"></div>
 		</section>
+
+		<section class="panel content-panel" aria-labelledby="medications-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="medications-title">Medicinlista</h2></div>
+			</div>
+			<p class="field-hint">Lägg till dosering och nästa dos för att hålla koll på behandlingen.</p>
+			<form id="medicationForm" class="log-form feature-form">
+				<label for="medicationName">Läkemedel</label>
+				<input id="medicationName" name="name" required maxlength="120" autocomplete="off">
+				<label for="medicationDosage">Dos</label>
+				<input id="medicationDosage" name="dosage" required maxlength="100" placeholder="T.ex. 1 tablett">
+				<label for="medicationFrequency">Frekvens</label>
+				<input id="medicationFrequency" name="frequency" required maxlength="100" placeholder="T.ex. två gånger dagligen">
+				<label for="medicationStartDate">Startdatum</label>
+				<input id="medicationStartDate" name="startDate" type="date" required>
+				<label for="medicationEndDate">Slutdatum <span class="optional">(valfritt)</span></label>
+				<input id="medicationEndDate" name="endDate" type="date">
+				<label for="medicationNextDose">Nästa dos <span class="optional">(valfritt)</span></label>
+				<input id="medicationNextDose" name="nextDose" type="date">
+				<label for="medicationNote" class="full">Anteckning <span class="optional">(valfritt)</span></label>
+				<textarea id="medicationNote" name="note" class="full" maxlength="500"></textarea>
+				<button class="primary full" type="submit">Lägg till medicin</button>
+			</form>
+			<div id="medicationList" class="feature-list" aria-live="polite"></div>
+		</section>
+
+		<section class="panel content-panel" aria-labelledby="costs-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="costs-title">Utgifter</h2></div>
+				<p class="expense-total" id="expenseTotal" aria-live="polite"></p>
+			</div>
+			<form id="costForm" class="log-form feature-form">
+				<label for="costDate">Datum</label>
+				<input id="costDate" name="date" type="date" required>
+				<label for="costCategory">Kategori</label>
+				<select id="costCategory" name="category" required>
+					<option value="">Välj kategori</option>
+					<option>Veterinär</option>
+					<option>Medicin</option>
+					<option>Foder</option>
+					<option>Försäkring</option>
+					<option>Utrustning</option>
+					<option>Övrigt</option>
+				</select>
+				<label for="costAmount">Belopp (kr)</label>
+				<input id="costAmount" name="amount" type="number" min="0.01" max="10000000" step="0.01" inputmode="decimal" required>
+				<label for="costNote" class="full">Anteckning <span class="optional">(valfritt)</span></label>
+				<textarea id="costNote" name="note" class="full" maxlength="500"></textarea>
+				<button class="primary full" type="submit">Lägg till utgift</button>
+			</form>
+			<div id="costList" class="feature-list" aria-live="polite"></div>
+		</section>
+
+		<section class="panel content-panel" aria-labelledby="documents-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="documents-title">Privata dokument</h2></div>
+			</div>
+			<p class="field-hint">Spara journaler, kvitton och försäkringsunderlag. Bara djurets ägare och inbjudna personer har åtkomst.</p>
+			<form id="documentForm" class="photo-form">
+				<label for="documentInput">Välj dokument</label>
+				<input id="documentInput" name="document" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required>
+				<button class="primary" type="submit">Ladda upp dokument</button>
+				<span class="field-hint">PDF, JPEG, PNG eller WEBP. Max 10 MB per dokument.</span>
+			</form>
+			<div id="documentList" class="feature-list" aria-live="polite"></div>
+		</section>
+
+		<section class="panel content-panel hidden" id="sharingPanel" aria-labelledby="sharing-title">
+			<div class="list-heading">
+				<div class="list-title"><h2 id="sharing-title">Dela djurprofil</h2></div>
+			</div>
+			<p class="field-hint">Lägg till en annan användares konto för att ge personen åtkomst till profilen och dess uppgifter.</p>
+			<form id="shareForm" class="share-form">
+				<label for="shareUsername">Användarnamn</label>
+				<input id="shareUsername" name="username" required minlength="3" maxlength="32" autocomplete="off" pattern="[A-Za-z0-9_.-]+" aria-describedby="shareUsernameHint">
+				<span class="field-hint" id="shareUsernameHint">Användarnamn: 3–32 bokstäver, siffror, punkt, bindestreck eller understreck.</span>
+				<button class="primary" type="submit">Dela med användare</button>
+			</form>
+			<h3 class="subheading">Personer med åtkomst</h3>
+			<div id="shareList" class="feature-list" aria-live="polite"></div>
+		</section>
 	</main>
 	<script src="/breeds.js"></script>
 	<script src="/example-images.js"></script>

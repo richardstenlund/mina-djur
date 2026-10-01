@@ -52,8 +52,21 @@ CREATE TABLE IF NOT EXISTS animal_records (
 	record_date DATE NOT NULL,
 	weight NUMERIC(6,2),
 	note TEXT,
+	diagnosis TEXT,
+	treatment TEXT,
+	follow_up_date DATE,
+	symptoms TEXT,
+	appetite TEXT,
+	mood TEXT,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE animal_records ADD COLUMN IF NOT EXISTS diagnosis TEXT;
+ALTER TABLE animal_records ADD COLUMN IF NOT EXISTS treatment TEXT;
+ALTER TABLE animal_records ADD COLUMN IF NOT EXISTS follow_up_date DATE;
+ALTER TABLE animal_records ADD COLUMN IF NOT EXISTS symptoms TEXT;
+ALTER TABLE animal_records ADD COLUMN IF NOT EXISTS appetite TEXT;
+ALTER TABLE animal_records ADD COLUMN IF NOT EXISTS mood TEXT;
 
 CREATE INDEX IF NOT EXISTS animal_records_animal_id_idx ON animal_records(animal_id);
 
@@ -79,6 +92,54 @@ CREATE TABLE IF NOT EXISTS animal_reminders (
 );
 
 CREATE INDEX IF NOT EXISTS animal_reminders_animal_id_idx ON animal_reminders(animal_id);
+
+CREATE TABLE IF NOT EXISTS animal_medications (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+	name TEXT NOT NULL,
+	dosage TEXT NOT NULL,
+	frequency TEXT NOT NULL,
+	start_date DATE NOT NULL,
+	end_date DATE,
+	next_dose DATE,
+	note TEXT,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS animal_medications_animal_id_idx ON animal_medications(animal_id);
+
+CREATE TABLE IF NOT EXISTS animal_costs (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+	cost_date DATE NOT NULL,
+	category TEXT NOT NULL,
+	amount NUMERIC(10,2) NOT NULL CHECK (amount > 0),
+	note TEXT,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS animal_costs_animal_id_idx ON animal_costs(animal_id);
+
+CREATE TABLE IF NOT EXISTS animal_documents (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+	filename TEXT NOT NULL,
+	display_name TEXT NOT NULL,
+	mime_type TEXT NOT NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS animal_documents_animal_id_idx ON animal_documents(animal_id);
+
+CREATE TABLE IF NOT EXISTS animal_shares (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	UNIQUE (animal_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS animal_shares_user_id_idx ON animal_shares(user_id);
 
 -- Session-tabell som krävs av connect-pg-simple
 CREATE TABLE IF NOT EXISTS "session" (

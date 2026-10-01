@@ -1,11 +1,11 @@
 ﻿# Mina djur
 
 Webbapp för att hålla koll på katter och smådjur: vikt, kloklippning,
-veterinärbesök, medicin, vaccinationer, avmaskning, pälsvård och egna
-anteckningar. Flera personer kan skapa varsitt konto – varje användare
-ser bara sina egna djur. Varje djur har en egen profilsida där du kan
-ladda upp bilder och uppdatera informationen. Layouten anpassar sig efter
-mobiltelefoner, surfplattor och större skärmar.
+veterinärbesök, medicin, vaccinationer, avmaskning, pälsvård, hälsodagbok
+och egna anteckningar. Varje djur har en egen profilsida med bilder,
+privata dokument, utgifter och möjlighet att dela åtkomst med andra
+användarkonton. Layouten anpassar sig efter mobiltelefoner, surfplattor
+och större skärmar.
 
 ## Superenkel installation
 
@@ -36,8 +36,8 @@ git pull
 docker compose up -d --build
 ```
 
-Databasen och uppladdade bilder sparas i Docker-volymer även när appen byggs
-om. Spara `.env` säkert — den innehåller lösenord och sessionshemlighet.
+Databasen samt uppladdade bilder och dokument sparas i Docker-volymer även
+när appen byggs om. Spara `.env` säkert — den innehåller lösenord och sessionshemlighet.
 Ta inte bort Docker-volymerna om du vill behålla dina data.
 
 Om något går fel kan du visa apploggen med:
@@ -62,8 +62,8 @@ foton:
 
 Databasen (Postgres) körs i en egen container med en Docker-volym
 (`db_data`) så att all data — användare, djur och anteckningar — sparas
-mellan omstarter och uppdateringar. Uppladdade bilder sparas i en egen
-volym (`uploads_data`) så de också finns kvar efter en omstart eller
+mellan omstarter och uppdateringar. Uppladdade bilder och dokument sparas i
+en egen volym (`uploads_data`) så de också finns kvar efter en omstart eller
 uppdatering.
 
 ## Djurprofiler och bilder
@@ -81,8 +81,21 @@ Där kan du:
   telefonnummer, försäkringsbolag och försäkringsnummer,
 - ange foderschema (typ, mängd och hur ofta),
 - lägga till och ta bort skötselanteckningar precis som på startsidan,
+- dokumentera diagnos, behandling och uppföljningsdatum vid veterinärbesök,
+- föra hälsodagbok med symtom, aptit och humör,
+- hålla och uppdatera en medicinlista med dos, frekvens, behandlingsdatum
+  och nästa dos; tydliga påminnelser visar om dosen är försenad, infaller
+  idag eller närmar sig,
+- registrera utgifter med datum, kategori, belopp och anteckning samt se
+  den sammanlagda kostnaden,
+- ladda upp, hämta och ta bort privata dokument som journaler och kvitton,
+- dela djurprofilen med en annan användares konto och återkalla åtkomst;
+  endast profilens ägare kan hantera delningen,
 - se en graf över viktutvecklingen över tid,
 - exportera hela skötselhistoriken som en CSV-fil (öppningsbar i Excel).
+
+Personer som fått delad åtkomst kan använda djurets funktioner och se dess
+uppgifter. Dokument och övrigt innehåll hanteras från respektive djurprofil.
 
 Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
 startsidan. Innan du laddar upp en egen bild visas en lokal exempelillustration
@@ -121,6 +134,10 @@ Databasens schema uppdateras automatiskt när appen startar.
 ```powershell
 docker compose exec db pg_dump -U minadjur minadjur > backup.sql
 ```
+
+Databasdumpen innehåller uppgifter och dokumentmetadata, men inte själva
+bilagorna. Säkerhetskopiera även Docker-volymen `uploads_data` för att bevara
+djurens bilder och uppladdade dokument.
 
 ## Utveckling utan Docker (valfritt)
 
