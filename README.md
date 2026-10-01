@@ -6,45 +6,28 @@ anteckningar. Flera personer kan skapa varsitt konto – varje användare
 ser bara sina egna djur. Varje djur har en egen profilsida där du kan
 ladda upp bilder och uppdatera informationen.
 
-## Snabb installation på en Docker-server
+## Superenkel installation
 
-Du behöver en server med Git, Docker Engine och Docker Compose v2 installerat.
-Kör följande kommandon i serverns terminal:
+Krav: Linux-server med Git, Docker Engine och Docker Compose v2. Kopiera och
+kör de här tre raderna i serverns terminal:
 
 ```bash
 git clone https://github.com/richardstenlund/mina-djur.git
 cd mina-djur
-cp .env.example .env
+bash install.sh
 ```
 
-Skapa två olika, starka hemligheter med `openssl rand -hex 32` (kör kommandot
-två gånger). Öppna sedan inställningsfilen:
+Klart! Installationsskriptet skapar automatiskt unika, starka hemligheter,
+frågar vilken port du vill använda (tryck Enter för standardport `4300`),
+skapar `.env`, bygger appen och startar databasen och webbsidan.
 
-```bash
-nano .env
-```
+Öppna sedan `http://SERVERNS-IP:4300` (byt till den port du valde) och skapa
+ett konto på registreringssidan. Om sidan inte öppnas, kontrollera att
+porten är tillåten i serverns brandvägg. Om porten redan används, välj en
+annan när installationsskriptet frågar.
 
-Ersätt `POSTGRES_PASSWORD` och `SESSION_SECRET` med de hemligheter du nyss
-skapade. Behåll inte mallens exempelvärden. Spara i nano med `Ctrl+O`, Enter
-och avsluta med `Ctrl+X`. Låt `APP_PORT=4300` stå kvar, eller ändra till en
-ledig port om 4300 redan används.
-
-Bygg och starta appen:
-
-```bash
-docker compose up -d --build
-```
-
-Öppna sedan `http://SERVERNS-IP:4300` (eller porten du valde) och skapa ditt
-konto via registreringssidan. Om sidan inte öppnas, kontrollera att porten är
-ledig och tillåten i serverns brandvägg:
-
-```bash
-docker compose ps
-docker compose logs --tail=100 app
-```
-
-Vid uppdatering efter en ny version räcker det att köra:
+Skriptet skriver aldrig över en befintlig `.env`. För att uppdatera en redan
+installerad app använder du:
 
 ```bash
 cd mina-djur
@@ -52,9 +35,15 @@ git pull
 docker compose up -d --build
 ```
 
-Databasen och uppladdade bilder sparas i Docker-volymerna `db_data` och
-`uploads_data`, även när appen byggs om. Ta inte bort volymerna om du vill
-behålla dina data.
+Databasen och uppladdade bilder sparas i Docker-volymer även när appen byggs
+om. Spara `.env` säkert — den innehåller lösenord och sessionshemlighet.
+Ta inte bort Docker-volymerna om du vill behålla dina data.
+
+Om något går fel kan du visa apploggen med:
+
+```bash
+docker compose logs --tail=100 app
+```
 
 > **Säkerhet:** För åtkomst utanför hemnätverket, använd en HTTPS-reverse proxy
 > (t.ex. Caddy, Nginx eller Traefik) och sätt `COOKIE_SECURE=true` i `.env`.
@@ -118,14 +107,12 @@ kan ändra intervallet per djur och påminnelsetyp direkt på profilsidan.
 ## Uppdatera appen
 
 ```powershell
-docker compose pull   # om du hämtar en ny image
+cd mina-djur
+git pull
 docker compose up -d --build
 ```
 
-Databasen påverkas inte av att app-containern byggs om. Eventuella
-schemaändringar (t.ex. nya tabeller) körs automatiskt vid varje
-serverstart, så det räcker med `git pull` + `docker compose up -d --build`
-för att få nya funktioner.
+Databasens schema uppdateras automatiskt när appen startar.
 
 ## Säkerhetskopiering
 
