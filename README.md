@@ -56,7 +56,10 @@ Där kan du:
 - exportera hela skötselhistoriken som en CSV-fil (öppningsbar i Excel).
 
 Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
-startsidan.
+startsidan. Innan du laddar upp en egen bild visas en lokal exempelillustration
+för djurarten. Originalillustrationerna ligger i
+[`app/public/images/examples`](./app/public/images/examples) och laddas från
+projektet utan externa bildtjänster.
 
 Djurartslistan innehåller bland annat hund, gerbil, chinchilla, degu,
 iller, igelkott, sköldpadda, ödla, orm och fisk. Välj "Annat" om du har

@@ -33,6 +33,12 @@
 		});
 	}
 
+	function getAnimalExampleImage(type) {
+		return Object.prototype.hasOwnProperty.call(window.animalExampleImages, type)
+			? window.animalExampleImages[type]
+			: null;
+	}
+
 	function showNotice(message) {
 		notice.textContent = message;
 		notice.classList.add('visible');
@@ -92,12 +98,28 @@
 		if (animal.sex) typeDetails.push(`${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`);
 		if (animal.neutered) typeDetails.push('🔒 Kastrerad');
 		document.querySelector('#profileType').textContent = typeDetails.join(' · ');
-		const icon = document.querySelector('#profileIcon');
-		if (animal.photos.length) {
-			icon.replaceWith(Object.assign(document.createElement('img'), {
-				id: 'profileIcon', className: 'animal-cover profile-icon', src: animal.photos[0].url, alt: `Foto på ${animal.name}`
-			}));
+		let icon = document.querySelector('#profileIcon');
+		const exampleImage = getAnimalExampleImage(animal.type);
+		if (animal.photos.length || exampleImage) {
+			if (icon.tagName !== 'IMG') {
+				const image = document.createElement('img');
+				image.id = 'profileIcon';
+				icon.replaceWith(image);
+				icon = image;
+			}
+			icon.className = 'animal-cover profile-icon';
+			icon.src = animal.photos.length ? animal.photos[0].url : exampleImage;
+			icon.alt = animal.photos.length
+				? `Foto på ${animal.name}`
+				: `Exempelillustration av ${animal.type.toLocaleLowerCase('sv-SE')}`;
 		} else {
+			if (icon.tagName !== 'SPAN') {
+				const placeholder = document.createElement('span');
+				icon.replaceWith(placeholder);
+				icon = placeholder;
+				icon.id = 'profileIcon';
+				icon.className = 'animal-icon profile-icon';
+			}
 			icon.textContent = typeIcons[animal.type] || '🐾';
 		}
 

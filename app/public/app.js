@@ -25,6 +25,12 @@
 		});
 	}
 
+	function getAnimalExampleImage(type) {
+		return Object.prototype.hasOwnProperty.call(window.animalExampleImages, type)
+			? window.animalExampleImages[type]
+			: null;
+	}
+
 	function showNotice(message, variant = 'error') {
 		notice.textContent = message;
 		notice.classList.add('visible');
@@ -171,7 +177,16 @@
 			cover.alt = `Foto på ${animal.name}`;
 			identity.append(cover);
 		} else {
-			identity.append(element('span', 'animal-icon', typeIcons[animal.type] || '🐾'));
+			const exampleImage = getAnimalExampleImage(animal.type);
+			if (exampleImage) {
+				const illustration = document.createElement('img');
+				illustration.className = 'animal-cover';
+				illustration.src = exampleImage;
+				illustration.alt = `Exempelillustration av ${animal.type.toLocaleLowerCase('sv-SE')}`;
+				identity.append(illustration);
+			} else {
+				identity.append(element('span', 'animal-icon', typeIcons[animal.type] || '🐾'));
+			}
 		}
 		const text = element('div');
 		text.append(element('h3', 'animal-name', animal.name), element('span', 'animal-type', animal.breed ? `${animal.type} · ${animal.breed}` : animal.type));
