@@ -122,34 +122,28 @@
 			</form>
 		</section>
 
-		<section class="panel content-panel" aria-labelledby="reminders-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="reminders-title">Påminnelser</h2></div>
-			</div>
+		<details class="panel content-panel" open aria-labelledby="reminders-title">
+			<summary><h2 id="reminders-title">Påminnelser</h2></summary>
 			<p class="field-hint">Nästa datum räknas ut automatiskt utifrån senaste anteckningen av varje typ. Du kan ändra intervallet per djur.</p>
 			<div id="reminderList" class="reminder-list"></div>
-		</section>
+		</details>
 
-		<section class="panel content-panel" aria-labelledby="weight-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="weight-title">Viktutveckling</h2></div>
-			</div>
+		<details class="panel content-panel" open aria-labelledby="weight-title">
+			<summary><h2 id="weight-title">Viktutveckling</h2></summary>
 			<div id="weightChart"></div>
-		</section>
+		</details>
 
-		<section class="panel content-panel" aria-labelledby="history-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="history-title">Skötsel &amp; historik</h2></div>
+		<details class="panel content-panel" open aria-labelledby="history-title">
+			<summary><h2 id="history-title">Skötsel &amp; historik</h2></summary>
+			<div class="panel-actions">
 				<a id="exportLink" class="text-button" href="#">Exportera som CSV</a>
 			</div>
 			<form id="logForm" class="log-form"></form>
 			<div id="logList" class="log-list"></div>
-		</section>
+		</details>
 
-		<section class="panel content-panel" aria-labelledby="medications-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="medications-title">Medicinlista</h2></div>
-			</div>
+		<details class="panel content-panel" aria-labelledby="medications-title">
+			<summary><h2 id="medications-title">Medicinlista</h2></summary>
 			<p class="field-hint">Lägg till dosering och nästa dos för att hålla koll på behandlingen.</p>
 			<form id="medicationForm" class="log-form feature-form">
 				<label for="medicationName">Läkemedel</label>
@@ -169,13 +163,15 @@
 				<button class="primary full" type="submit">Lägg till medicin</button>
 			</form>
 			<div id="medicationList" class="feature-list" aria-live="polite"></div>
-		</section>
+		</details>
 
-		<section class="panel content-panel" aria-labelledby="costs-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="costs-title">Utgifter</h2></div>
-				<p class="expense-total" id="expenseTotal" aria-live="polite"></p>
-			</div>
+		<details class="panel content-panel" aria-labelledby="costs-title">
+			<summary>
+				<div class="list-title">
+					<h2 id="costs-title">Utgifter</h2>
+					<p class="expense-total" id="expenseTotal" aria-live="polite"></p>
+				</div>
+			</summary>
 			<form id="costForm" class="log-form feature-form">
 				<label for="costDate">Datum</label>
 				<input id="costDate" name="date" type="date" required>
@@ -196,12 +192,10 @@
 				<button class="primary full" type="submit">Lägg till utgift</button>
 			</form>
 			<div id="costList" class="feature-list" aria-live="polite"></div>
-		</section>
+		</details>
 
-		<section class="panel content-panel" aria-labelledby="documents-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="documents-title">Privata dokument</h2></div>
-			</div>
+		<details class="panel content-panel" aria-labelledby="documents-title">
+			<summary><h2 id="documents-title">Privata dokument</h2></summary>
 			<p class="field-hint">Spara journaler, kvitton och försäkringsunderlag. Bara djurets ägare och inbjudna personer har åtkomst.</p>
 			<form id="documentForm" class="photo-form">
 				<label for="documentInput">Välj dokument</label>
@@ -210,12 +204,10 @@
 				<span class="field-hint">PDF, JPEG, PNG eller WEBP. Max 10 MB per dokument.</span>
 			</form>
 			<div id="documentList" class="feature-list" aria-live="polite"></div>
-		</section>
+		</details>
 
-		<section class="panel content-panel hidden" id="sharingPanel" aria-labelledby="sharing-title">
-			<div class="list-heading">
-				<div class="list-title"><h2 id="sharing-title">Dela djurprofil</h2></div>
-			</div>
+		<details class="panel content-panel hidden" id="sharingPanel" aria-labelledby="sharing-title">
+			<summary><h2 id="sharing-title">Dela djurprofil</h2></summary>
 			<p class="field-hint">Lägg till en annan användares konto för att ge personen åtkomst till profilen och dess uppgifter.</p>
 			<form id="shareForm" class="share-form">
 				<label for="shareUsername">Användarnamn</label>
@@ -225,7 +217,7 @@
 			</form>
 			<h3 class="subheading">Personer med åtkomst</h3>
 			<div id="shareList" class="feature-list" aria-live="polite"></div>
-		</section>
+		</details>
 	</main>
 	<script src="/breeds.js"></script>
 	<script src="/example-images.js"></script>
