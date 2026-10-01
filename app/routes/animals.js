@@ -92,6 +92,20 @@ function isValidDate(value) {
 		&& new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
 }
 
+// Formaterar ett DATE-värde från databasen till "YYYY-MM-DD".
+// node-postgres parsar DATE-kolumner till ett Date-objekt satt till lokal
+// midnatt. Att då använda toISOString() (som konverterar till UTC) kan
+// skifta datumet en dag om processen körs i en tidszon öster om UTC
+// (t.ex. Europe/Stockholm). Vi läser därför ut de lokala komponenterna
+// istället för att gå via UTC.
+function formatDateOnly(date) {
+	if (!date) return '';
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+}
+
 const SEX_VALUES = ['Hona', 'Hane', 'Okänt'];
 
 // Validerar och normaliserar fälten för ett djur. Används av både
@@ -264,12 +278,12 @@ router.get('/', async (req, res) => {
 				list.push({
 					id: record.id,
 					type: record.type,
-					date: record.record_date.toISOString().slice(0, 10),
+					date: formatDateOnly(record.record_date),
 					weight: record.weight !== null ? Number(record.weight) : null,
 					note: record.note || '',
 					diagnosis: record.diagnosis || '',
 					treatment: record.treatment || '',
-					followUpDate: record.follow_up_date ? record.follow_up_date.toISOString().slice(0, 10) : '',
+					followUpDate: formatDateOnly(record.follow_up_date),
 					symptoms: record.symptoms || '',
 					appetite: record.appetite || '',
 					mood: record.mood || ''
@@ -330,7 +344,7 @@ function formatAnimal(row) {
 		id: row.id,
 		name: row.name,
 		type: row.type,
-		birthday: row.birthday ? row.birthday.toISOString().slice(0, 10) : '',
+		birthday: formatDateOnly(row.birthday),
 		info: row.info || '',
 		initialWeight: row.initial_weight !== null ? Number(row.initial_weight) : null,
 		allergies: row.allergies || '',
@@ -464,12 +478,12 @@ router.get('/:animalId', async (req, res) => {
 		const records = recordsResult.rows.map(record => ({
 			id: record.id,
 			type: record.type,
-			date: record.record_date.toISOString().slice(0, 10),
+			date: formatDateOnly(record.record_date),
 			weight: record.weight !== null ? Number(record.weight) : null,
 			note: record.note || '',
 			diagnosis: record.diagnosis || '',
 			treatment: record.treatment || '',
-			followUpDate: record.follow_up_date ? record.follow_up_date.toISOString().slice(0, 10) : '',
+			followUpDate: formatDateOnly(record.follow_up_date),
 			symptoms: record.symptoms || '',
 			appetite: record.appetite || '',
 			mood: record.mood || ''
@@ -486,13 +500,13 @@ router.get('/:animalId', async (req, res) => {
 			reminders: buildReminders(records, remindersResult.rows),
 			medications: medicationsResult.rows.map(item => ({
 				id: item.id, name: item.name, dosage: item.dosage, frequency: item.frequency,
-				startDate: item.start_date.toISOString().slice(0, 10),
-				endDate: item.end_date ? item.end_date.toISOString().slice(0, 10) : '',
-				nextDose: item.next_dose ? item.next_dose.toISOString().slice(0, 10) : '',
+				startDate: formatDateOnly(item.start_date),
+				endDate: formatDateOnly(item.end_date),
+				nextDose: formatDateOnly(item.next_dose),
 				note: item.note || ''
 			})),
 			costs: costsResult.rows.map(item => ({
-				id: item.id, date: item.cost_date.toISOString().slice(0, 10),
+				id: item.id, date: formatDateOnly(item.cost_date),
 				category: item.category, amount: Number(item.amount), note: item.note || ''
 			})),
 			documents: documentsResult.rows.map(item => ({
@@ -610,9 +624,9 @@ router.post('/:animalId/medications', async (req, res) => {
 		const medication = result.rows[0];
 		res.status(201).json({
 			id: medication.id, name: medication.name, dosage: medication.dosage,
-			frequency: medication.frequency, startDate: medication.start_date.toISOString().slice(0, 10),
-			endDate: medication.end_date ? medication.end_date.toISOString().slice(0, 10) : '',
-			nextDose: medication.next_dose ? medication.next_dose.toISOString().slice(0, 10) : '',
+			frequency: medication.frequency, startDate: formatDateOnly(medication.start_date),
+			endDate: formatDateOnly(medication.end_date),
+			nextDose: formatDateOnly(medication.next_dose),
 			note: medication.note || ''
 		});
 	} catch (error) {
@@ -651,9 +665,9 @@ router.put('/:animalId/medications/:medicationId', async (req, res) => {
 		if (!medication) return res.status(404).json({ error: 'Medicinen hittades inte.' });
 		res.json({
 			id: medication.id, name: medication.name, dosage: medication.dosage,
-			frequency: medication.frequency, startDate: medication.start_date.toISOString().slice(0, 10),
-			endDate: medication.end_date ? medication.end_date.toISOString().slice(0, 10) : '',
-			nextDose: medication.next_dose ? medication.next_dose.toISOString().slice(0, 10) : '',
+			frequency: medication.frequency, startDate: formatDateOnly(medication.start_date),
+			endDate: formatDateOnly(medication.end_date),
+			nextDose: formatDateOnly(medication.next_dose),
 			note: medication.note || ''
 		});
 	} catch (error) {
@@ -703,7 +717,7 @@ router.post('/:animalId/costs', async (req, res) => {
 		);
 		const cost = result.rows[0];
 		res.status(201).json({
-			id: cost.id, date: cost.cost_date.toISOString().slice(0, 10),
+			id: cost.id, date: formatDateOnly(cost.cost_date),
 			category: cost.category, amount: Number(cost.amount), note: cost.note || ''
 		});
 	} catch (error) {
@@ -898,13 +912,13 @@ router.get('/:animalId/export.csv', async (req, res) => {
 		const lines = [['Datum', 'Typ', 'Vikt (kg)', 'Anteckning', 'Diagnos', 'Behandling', 'Uppföljning', 'Symtom', 'Aptit', 'Humör'].map(escapeCsv).join(';')];
 		recordsResult.rows.forEach(record => {
 			lines.push([
-				record.record_date.toISOString().slice(0, 10),
+				formatDateOnly(record.record_date),
 				record.type,
 				record.weight !== null ? Number(record.weight) : '',
 				record.note || '',
 				record.diagnosis || '',
 				record.treatment || '',
-				record.follow_up_date ? record.follow_up_date.toISOString().slice(0, 10) : '',
+				formatDateOnly(record.follow_up_date),
 				record.symptoms || '',
 				record.appetite || '',
 				record.mood || ''
@@ -1085,12 +1099,12 @@ router.post('/:animalId/records', async (req, res) => {
 		res.status(201).json({
 			id: row.id,
 			type: row.type,
-			date: row.record_date.toISOString().slice(0, 10),
+			date: formatDateOnly(row.record_date),
 			weight: row.weight !== null ? Number(row.weight) : null,
 			note: row.note || '',
 			diagnosis: row.diagnosis || '',
 			treatment: row.treatment || '',
-			followUpDate: row.follow_up_date ? row.follow_up_date.toISOString().slice(0, 10) : '',
+			followUpDate: formatDateOnly(row.follow_up_date),
 			symptoms: row.symptoms || '',
 			appetite: row.appetite || '',
 			mood: row.mood || ''
