@@ -105,6 +105,7 @@ djurets profilsida och som liten badge på djurkortet på startsidan. Du
 kan ändra intervallet per djur och påminnelsetyp direkt på profilsidan.
 
 ## Uppdatera appen
+<img width="1203" height="1197" alt="image" src="https://github.com/user-attachments/assets/adde2378-8b7c-406d-9627-45e93e07d174" />
 
 ```powershell
 cd mina-djur
