@@ -131,6 +131,39 @@ Databasens schema uppdateras automatiskt när appen startar.
 
 ## Säkerhetskopiering
 
+Skripten `backup.sh` och `restore.sh` tar hand om både databasen och
+uppladdade filer (bilder och dokument) i ett enda kommando, och fungerar
+på en vanlig Linux-server med Docker:
+
+```bash
+./backup.sh
+```
+
+Det skapar två filer i mappen `backups/`, t.ex.
+`backups/db-20260101-030000.sql.gz` och `backups/uploads-20260101-030000.tar.gz`.
+Säkerhetskopior äldre än 30 dagar rensas automatiskt bort. Kopiera gärna
+`backups/`-mappen till en annan plats också (annan server, molnlagring eller
+liknande) – en kopia på samma disk skyddar inte mot diskhaveri.
+
+Kör backupen automatiskt varje natt med cron:
+
+```bash
+crontab -e
+```
+
+```
+0 3 * * * /sökväg/till/mina-djur/backup.sh >> /sökväg/till/mina-djur/backups/backup.log 2>&1
+```
+
+Vid behov återställer du en säkerhetskopia (skriver över nuvarande data,
+frågar om bekräftelse):
+
+```bash
+./restore.sh backups/db-20260101-030000.sql.gz backups/uploads-20260101-030000.tar.gz
+```
+
+Om du hellre vill göra det manuellt:
+
 ```powershell
 docker compose exec db pg_dump -U minadjur minadjur > backup.sql
 ```

@@ -3,9 +3,20 @@ const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
 const { pool } = require('../db/pool');
 
 const router = express.Router();
+
+// Begränsar delningsförsök (POST /shares) per IP, för att hindra att någon
+// "gissar" sig fram till giltiga användarnamn genom upprepade anrop.
+const shareLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 30,
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: { error: 'För många delningsförsök. Vänta en stund och försök igen.' }
+});
 
 const RECORD_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Hälsodagbok', 'Övrigt'];
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -846,7 +857,7 @@ router.get('/:animalId/shares', async (req, res) => {
 	}
 });
 
-router.post('/:animalId/shares', async (req, res) => {
+router.post('/:animalId/shares', shareLimiter, async (req, res) => {
 	const { username } = req.body || {};
 	if (typeof username !== 'string' || !username.trim() || username.trim().length > 32) {
 		return res.status(400).json({ error: 'Ange ett giltigt användarnamn.' });
