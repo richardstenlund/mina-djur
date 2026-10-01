@@ -11,8 +11,19 @@
 	const list = document.querySelector('#animals');
 	const typeSelect = document.querySelector('#type');
 	const customType = document.querySelector('#customType');
+	const breedInput = document.querySelector('#breed');
+	const breedOptions = document.querySelector('#breed-options');
 	const saveButton = form.querySelector('button[type="submit"]');
 	let animals = [];
+
+	function updateBreedOptions(type) {
+		breedOptions.replaceChildren();
+		(window.animalBreedOptions[type] || []).forEach(breed => {
+			const option = document.createElement('option');
+			option.value = breed;
+			breedOptions.append(option);
+		});
+	}
 
 	function showNotice(message, variant = 'error') {
 		notice.textContent = message;
@@ -163,7 +174,7 @@
 			identity.append(element('span', 'animal-icon', typeIcons[animal.type] || '🐾'));
 		}
 		const text = element('div');
-		text.append(element('h3', 'animal-name', animal.name), element('span', 'animal-type', animal.type));
+		text.append(element('h3', 'animal-name', animal.name), element('span', 'animal-type', animal.breed ? `${animal.type} · ${animal.breed}` : animal.type));
 
 		const meta = element('div', 'animal-meta');
 		if (animal.sex) meta.append(element('span', '', `${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`));
@@ -267,8 +278,10 @@
 	typeSelect.addEventListener('change', () => {
 		customType.classList.toggle('hidden', typeSelect.value !== 'Annat');
 		customType.required = typeSelect.value === 'Annat';
+		updateBreedOptions(typeSelect.value === 'Annat' ? '' : typeSelect.value);
 		if (typeSelect.value === 'Annat') customType.focus();
 	});
+	updateBreedOptions(typeSelect.value);
 
 	form.addEventListener('submit', async event => {
 		event.preventDefault();
@@ -279,6 +292,7 @@
 			name,
 			type: typeSelect.value === 'Annat' ? customType.value.trim() : typeSelect.value,
 			birthday: document.querySelector('#birthday').value,
+			breed: breedInput.value.trim(),
 			info: document.querySelector('#info').value.trim(),
 			initialWeight: enteredWeight ? Number(enteredWeight.replace(',', '.')) : null,
 			sex: document.querySelector('#sex').value,

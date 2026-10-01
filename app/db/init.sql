@@ -41,6 +41,7 @@ ALTER TABLE animals ADD COLUMN IF NOT EXISTS father_coat TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS mother_name TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS mother_color_pattern TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS mother_coat TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS breed TEXT;
 
 CREATE INDEX IF NOT EXISTS animals_user_id_idx ON animals(user_id);
 

@@ -93,7 +93,7 @@ function parseAnimalInput(body) {
 		insuranceCompany, insuranceNumber,
 		foodType, foodAmount, foodFrequency,
 		sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat,
-		motherName, motherColorPattern, motherCoat
+		motherName, motherColorPattern, motherCoat, breed
 	} = body || {};
 
 	if (typeof name !== 'string' || !name.trim() || name.length > 60) {
@@ -140,7 +140,8 @@ function parseAnimalInput(body) {
 		fatherCoat: [fatherCoat, 100, 'Faderns hårlag är för långt (max 100 tecken).'],
 		motherName: [motherName, 100, 'Moderns namn är för långt (max 100 tecken).'],
 		motherColorPattern: [motherColorPattern, 100, 'Moderns färg och teckning är för långt (max 100 tecken).'],
-		motherCoat: [motherCoat, 100, 'Moderns hårlag är för långt (max 100 tecken).']
+		motherCoat: [motherCoat, 100, 'Moderns hårlag är för långt (max 100 tecken).'],
+		breed: [breed, 100, 'Rasen/varianten är för lång (max 100 tecken).']
 	};
 	const parsedShortText = {};
 	for (const [key, [value, maxLength, errorMessage]] of Object.entries(shortTextFields)) {
@@ -269,7 +270,7 @@ const ANIMAL_COLUMNS = `id, name, type, birthday, info, initial_weight,
 	insurance_company, insurance_number,
 	food_type, food_amount, food_frequency,
 	sex, neutered, breeder, father_name, father_color_pattern, father_coat,
-	mother_name, mother_color_pattern, mother_coat`;
+	mother_name, mother_color_pattern, mother_coat, breed`;
 
 // Formaterar en databasrad från "animals" till det JSON-format som frontend använder.
 function formatAnimal(row) {
@@ -297,7 +298,8 @@ function formatAnimal(row) {
 		fatherCoat: row.father_coat || '',
 		motherName: row.mother_name || '',
 		motherColorPattern: row.mother_color_pattern || '',
-		motherCoat: row.mother_coat || ''
+		motherCoat: row.mother_coat || '',
+		breed: row.breed || ''
 	};
 }
 
@@ -307,7 +309,7 @@ router.post('/', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat, breed } = parsed.value;
 
 	try {
 		const result = await pool.query(
@@ -315,14 +317,14 @@ router.post('/', async (req, res) => {
 				allergies, microchip_id, vet_name, vet_phone, insurance_company, insurance_number,
 				food_type, food_amount, food_frequency, sex, neutered,
 				breeder, father_name, father_color_pattern, father_coat,
-				mother_name, mother_color_pattern, mother_coat)
+				mother_name, mother_color_pattern, mother_coat, breed)
 			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
-				$18, $19, $20, $21, $22, $23, $24)
+				$18, $19, $20, $21, $22, $23, $24, $25)
 			 RETURNING ${ANIMAL_COLUMNS}`,
 			[req.session.userId, name, type, birthday, info, initialWeight,
 				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
 				foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName,
-				fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat]
+				fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat, breed]
 		);
 		res.status(201).json({ ...formatAnimal(result.rows[0]), records: [], photos: [], coverPhotoUrl: null, reminders: buildReminders([], []) });
 	} catch (error) {
@@ -393,7 +395,7 @@ router.put('/:animalId', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat, breed } = parsed.value;
 
 	try {
 		const result = await pool.query(
@@ -403,13 +405,14 @@ router.put('/:animalId', async (req, res) => {
 				food_type = $12, food_amount = $13, food_frequency = $14,
 				sex = $15, neutered = $16,
 				breeder = $17, father_name = $18, father_color_pattern = $19, father_coat = $20,
-				mother_name = $21, mother_color_pattern = $22, mother_coat = $23
-			 WHERE id = $24 AND user_id = $25
+				mother_name = $21, mother_color_pattern = $22, mother_coat = $23,
+				breed = $24
+			 WHERE id = $25 AND user_id = $26
 			 RETURNING ${ANIMAL_COLUMNS}`,
 			[name, type, birthday, info, initialWeight,
 				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
 				foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName,
-				fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat,
+				fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat, breed,
 				req.params.animalId, req.session.userId]
 		);
 		const row = result.rows[0];

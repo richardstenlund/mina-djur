@@ -46,6 +46,7 @@ Där kan du:
 - ta bort bilder,
 - uppdatera namn, djurart, födelsedatum, kön, kastreringsstatus, startvikt
   och övrig information,
+- välja eller skriva in ras/variant; förslagen anpassas efter vald djurart,
 - spara uppfödare samt namn, färg/teckning och hårlag för far och mor,
 - fylla i allergier/specialbehov, chipnummer, veterinärklinik med
   telefonnummer, försäkringsbolag och försäkringsnummer,
@@ -60,6 +61,8 @@ startsidan.
 Djurartslistan innehåller bland annat hund, gerbil, chinchilla, degu,
 iller, igelkott, sköldpadda, ödla, orm och fisk. Välj "Annat" om du har
 en djurart som inte finns med i listan.
+Rasförslag visas för varje listad djurart, och egna raser/varianter kan
+skrivas in fritt.
 
 ## Påminnelser
 

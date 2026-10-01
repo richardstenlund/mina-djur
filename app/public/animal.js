@@ -17,10 +17,21 @@
 	const reminderList = document.querySelector('#reminderList');
 	const weightChart = document.querySelector('#weightChart');
 	const exportLink = document.querySelector('#exportLink');
+	const breedInput = document.querySelector('#breed');
+	const breedOptions = document.querySelector('#breed-options');
 
 	const params = new URLSearchParams(window.location.search);
 	const animalId = params.get('id');
 	let animal = null;
+
+	function updateBreedOptions(type) {
+		breedOptions.replaceChildren();
+		(window.animalBreedOptions[type] || []).forEach(breed => {
+			const option = document.createElement('option');
+			option.value = breed;
+			breedOptions.append(option);
+		});
+	}
 
 	function showNotice(message) {
 		notice.textContent = message;
@@ -77,7 +88,7 @@
 	function renderProfile() {
 		document.title = `${animal.name} – Mina djur`;
 		document.querySelector('#profile-title').textContent = animal.name;
-		const typeDetails = [animal.type];
+		const typeDetails = [animal.breed ? `${animal.type} · ${animal.breed}` : animal.type];
 		if (animal.sex) typeDetails.push(`${animal.sex === 'Hona' ? '♀' : '♂'} ${animal.sex}`);
 		if (animal.neutered) typeDetails.push('🔒 Kastrerad');
 		document.querySelector('#profileType').textContent = typeDetails.join(' · ');
@@ -92,6 +103,8 @@
 
 		document.querySelector('#name').value = animal.name;
 		document.querySelector('#type').value = animal.type;
+		breedInput.value = animal.breed || '';
+		updateBreedOptions(animal.type);
 		document.querySelector('#birthday').value = animal.birthday || '';
 		document.querySelector('#sex').value = animal.sex || '';
 		document.querySelector('#neutered').checked = Boolean(animal.neutered);
@@ -351,6 +364,7 @@
 		const payload = {
 			name: document.querySelector('#name').value.trim(),
 			type: document.querySelector('#type').value.trim(),
+			breed: breedInput.value.trim(),
 			birthday: document.querySelector('#birthday').value,
 			info: document.querySelector('#info').value.trim(),
 			initialWeight: document.querySelector('#initialWeight').value
@@ -387,6 +401,10 @@
 		} finally {
 			submitButton.disabled = false;
 		}
+	});
+
+	document.querySelector('#type').addEventListener('input', event => {
+		updateBreedOptions(event.currentTarget.value.trim());
 	});
 
 	logForm.addEventListener('submit', async event => {

@@ -44,6 +44,10 @@
 				<label for="type">Djurart</label>
 				<input id="type" name="type" required maxlength="40">
 
+				<label for="breed">Ras / variant <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
+				<input id="breed" name="breed" list="breed-options" maxlength="100" placeholder="Välj eller skriv ras/variant">
+				<datalist id="breed-options"></datalist>
+
 				<label for="birthday">Födelsedatum <span style="font-weight:400;color:#78827a">(valfritt)</span></label>
 				<input id="birthday" name="birthday" type="date">
 
@@ -142,6 +146,7 @@
 			<div id="logList" class="log-list"></div>
 		</section>
 	</main>
+	<script src="/breeds.js"></script>
 	<script src="/animal.js"></script>
 </body>
 </html>
