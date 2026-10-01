@@ -92,7 +92,8 @@ function parseAnimalInput(body) {
 		allergies, microchipId, vetName, vetPhone,
 		insuranceCompany, insuranceNumber,
 		foodType, foodAmount, foodFrequency,
-		sex, neutered
+		sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat,
+		motherName, motherColorPattern, motherCoat
 	} = body || {};
 
 	if (typeof name !== 'string' || !name.trim() || name.length > 60) {
@@ -132,7 +133,14 @@ function parseAnimalInput(body) {
 		insuranceNumber: [insuranceNumber, 60, 'Försäkringsnumret är för långt (max 60 tecken).'],
 		foodType: [foodType, 200, 'Fodertypen är för lång (max 200 tecken).'],
 		foodAmount: [foodAmount, 100, 'Fodermängden är för lång (max 100 tecken).'],
-		foodFrequency: [foodFrequency, 100, 'Utfodringsfrekvensen är för lång (max 100 tecken).']
+		foodFrequency: [foodFrequency, 100, 'Utfodringsfrekvensen är för lång (max 100 tecken).'],
+		breeder: [breeder, 100, 'Uppfödarens namn är för långt (max 100 tecken).'],
+		fatherName: [fatherName, 100, 'Faderns namn är för långt (max 100 tecken).'],
+		fatherColorPattern: [fatherColorPattern, 100, 'Faderns färg och teckning är för långt (max 100 tecken).'],
+		fatherCoat: [fatherCoat, 100, 'Faderns hårlag är för långt (max 100 tecken).'],
+		motherName: [motherName, 100, 'Moderns namn är för långt (max 100 tecken).'],
+		motherColorPattern: [motherColorPattern, 100, 'Moderns färg och teckning är för långt (max 100 tecken).'],
+		motherCoat: [motherCoat, 100, 'Moderns hårlag är för långt (max 100 tecken).']
 	};
 	const parsedShortText = {};
 	for (const [key, [value, maxLength, errorMessage]] of Object.entries(shortTextFields)) {
@@ -260,7 +268,8 @@ const ANIMAL_COLUMNS = `id, name, type, birthday, info, initial_weight,
 	allergies, microchip_id, vet_name, vet_phone,
 	insurance_company, insurance_number,
 	food_type, food_amount, food_frequency,
-	sex, neutered`;
+	sex, neutered, breeder, father_name, father_color_pattern, father_coat,
+	mother_name, mother_color_pattern, mother_coat`;
 
 // Formaterar en databasrad från "animals" till det JSON-format som frontend använder.
 function formatAnimal(row) {
@@ -281,7 +290,14 @@ function formatAnimal(row) {
 		foodAmount: row.food_amount || '',
 		foodFrequency: row.food_frequency || '',
 		sex: row.sex || '',
-		neutered: row.neutered === true
+		neutered: row.neutered === true,
+		breeder: row.breeder || '',
+		fatherName: row.father_name || '',
+		fatherColorPattern: row.father_color_pattern || '',
+		fatherCoat: row.father_coat || '',
+		motherName: row.mother_name || '',
+		motherColorPattern: row.mother_color_pattern || '',
+		motherCoat: row.mother_coat || ''
 	};
 }
 
@@ -291,18 +307,22 @@ router.post('/', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat } = parsed.value;
 
 	try {
 		const result = await pool.query(
 			`INSERT INTO animals (user_id, name, type, birthday, info, initial_weight,
 				allergies, microchip_id, vet_name, vet_phone, insurance_company, insurance_number,
-				food_type, food_amount, food_frequency, sex, neutered)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+				food_type, food_amount, food_frequency, sex, neutered,
+				breeder, father_name, father_color_pattern, father_coat,
+				mother_name, mother_color_pattern, mother_coat)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+				$18, $19, $20, $21, $22, $23, $24)
 			 RETURNING ${ANIMAL_COLUMNS}`,
 			[req.session.userId, name, type, birthday, info, initialWeight,
 				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
-				foodType, foodAmount, foodFrequency, sex, neutered]
+				foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName,
+				fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat]
 		);
 		res.status(201).json({ ...formatAnimal(result.rows[0]), records: [], photos: [], coverPhotoUrl: null, reminders: buildReminders([], []) });
 	} catch (error) {
@@ -373,7 +393,7 @@ router.put('/:animalId', async (req, res) => {
 	if (parsed.error) {
 		return res.status(400).json({ error: parsed.error });
 	}
-	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered } = parsed.value;
+	const { name, type, birthday, info, initialWeight, allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber, foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName, fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat } = parsed.value;
 
 	try {
 		const result = await pool.query(
@@ -381,12 +401,15 @@ router.put('/:animalId', async (req, res) => {
 				allergies = $6, microchip_id = $7, vet_name = $8, vet_phone = $9,
 				insurance_company = $10, insurance_number = $11,
 				food_type = $12, food_amount = $13, food_frequency = $14,
-				sex = $15, neutered = $16
-			 WHERE id = $17 AND user_id = $18
+				sex = $15, neutered = $16,
+				breeder = $17, father_name = $18, father_color_pattern = $19, father_coat = $20,
+				mother_name = $21, mother_color_pattern = $22, mother_coat = $23
+			 WHERE id = $24 AND user_id = $25
 			 RETURNING ${ANIMAL_COLUMNS}`,
 			[name, type, birthday, info, initialWeight,
 				allergies, microchipId, vetName, vetPhone, insuranceCompany, insuranceNumber,
-				foodType, foodAmount, foodFrequency, sex, neutered,
+				foodType, foodAmount, foodFrequency, sex, neutered, breeder, fatherName,
+				fatherColorPattern, fatherCoat, motherName, motherColorPattern, motherCoat,
 				req.params.animalId, req.session.userId]
 		);
 		const row = result.rows[0];

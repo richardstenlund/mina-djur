@@ -46,6 +46,7 @@ Där kan du:
 - ta bort bilder,
 - uppdatera namn, djurart, födelsedatum, kön, kastreringsstatus, startvikt
   och övrig information,
+- spara uppfödare samt namn, färg/teckning och hårlag för far och mor,
 - fylla i allergier/specialbehov, chipnummer, veterinärklinik med
   telefonnummer, försäkringsbolag och försäkringsnummer,
 - ange foderschema (typ, mängd och hur ofta),
@@ -55,6 +56,10 @@ Där kan du:
 
 Den första uppladdade bilden visas som "omslagsbild" på djurets kort på
 startsidan.
+
+Djurartslistan innehåller bland annat hund, gerbil, chinchilla, degu,
+iller, igelkott, sköldpadda, ödla, orm och fisk. Välj "Annat" om du har
+en djurart som inte finns med i listan.
 
 ## Påminnelser
 

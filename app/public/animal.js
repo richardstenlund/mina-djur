@@ -1,7 +1,12 @@
 (() => {
 	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Övrigt'];
 	const REMINDER_LABELS = { Kloklippning: '✂️ Kloklippning', Vaccination: '💉 Vaccination', Avmaskning: '💊 Avmaskning' };
-	const typeIcons = { Katt: '🐈', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹', Råtta: '🐭', Mus: '🐭', Fågel: '🐦' };
+	const typeIcons = {
+		Katt: '🐈', Hund: '🐕', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹',
+		Råtta: '🐭', Mus: '🐭', Gerbil: '🐭', Chinchilla: '🐭', Degu: '🐭',
+		Iller: '🦦', Igelkott: '🦔', Fågel: '🐦', Sköldpadda: '🐢', Ödla: '🦎',
+		Orm: '🐍', Fisk: '🐟'
+	};
 	const notice = document.querySelector('#notice');
 	const gallery = document.querySelector('#gallery');
 	const photoForm = document.querySelector('#photoForm');
@@ -100,6 +105,13 @@
 		document.querySelector('#foodType').value = animal.foodType || '';
 		document.querySelector('#foodAmount').value = animal.foodAmount || '';
 		document.querySelector('#foodFrequency').value = animal.foodFrequency || '';
+		document.querySelector('#breeder').value = animal.breeder || '';
+		document.querySelector('#fatherName').value = animal.fatherName || '';
+		document.querySelector('#fatherColorPattern').value = animal.fatherColorPattern || '';
+		document.querySelector('#fatherCoat').value = animal.fatherCoat || '';
+		document.querySelector('#motherName').value = animal.motherName || '';
+		document.querySelector('#motherColorPattern').value = animal.motherColorPattern || '';
+		document.querySelector('#motherCoat').value = animal.motherCoat || '';
 		document.querySelector('#info').value = animal.info || '';
 		exportLink.href = `/api/animals/${animalId}/export.csv`;
 
@@ -354,7 +366,14 @@
 			insuranceNumber: document.querySelector('#insuranceNumber').value.trim(),
 			foodType: document.querySelector('#foodType').value.trim(),
 			foodAmount: document.querySelector('#foodAmount').value.trim(),
-			foodFrequency: document.querySelector('#foodFrequency').value.trim()
+			foodFrequency: document.querySelector('#foodFrequency').value.trim(),
+			breeder: document.querySelector('#breeder').value.trim(),
+			fatherName: document.querySelector('#fatherName').value.trim(),
+			fatherColorPattern: document.querySelector('#fatherColorPattern').value.trim(),
+			fatherCoat: document.querySelector('#fatherCoat').value.trim(),
+			motherName: document.querySelector('#motherName').value.trim(),
+			motherColorPattern: document.querySelector('#motherColorPattern').value.trim(),
+			motherCoat: document.querySelector('#motherCoat').value.trim()
 		};
 		const submitButton = profileForm.querySelector('button[type="submit"]');
 		submitButton.disabled = true;

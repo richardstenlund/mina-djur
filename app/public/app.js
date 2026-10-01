@@ -1,6 +1,11 @@
 (() => {
 	const LOG_TYPES = ['Vikt', 'Kloklippning', 'Veterinärbesök', 'Medicin', 'Vaccination', 'Avmaskning', 'Pälsvård', 'Övrigt'];
-	const typeIcons = { Katt: '🐈', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹', Råtta: '🐭', Mus: '🐭', Fågel: '🐦' };
+	const typeIcons = {
+		Katt: '🐈', Hund: '🐕', Kanin: '🐇', Marsvin: '🐹', Hamster: '🐹',
+		Råtta: '🐭', Mus: '🐭', Gerbil: '🐭', Chinchilla: '🐭', Degu: '🐭',
+		Iller: '🦦', Igelkott: '🦔', Fågel: '🐦', Sköldpadda: '🐢', Ödla: '🦎',
+		Orm: '🐍', Fisk: '🐟'
+	};
 	const notice = document.querySelector('#notice');
 	const form = document.querySelector('#animalForm');
 	const list = document.querySelector('#animals');

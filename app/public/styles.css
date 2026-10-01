@@ -88,6 +88,7 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 .log-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; padding: 14px; border: 1px solid #e9ede5; border-radius: 12px; background: white; }
 .log-form label { margin-top: 2px; }
 .log-form .full { grid-column: 1 / -1; }
+.pedigree-heading { grid-column: 1 / -1; margin: 14px 0 4px; padding-top: 14px; border-top: 1px solid var(--line); font-size: .95rem; }
 .log-form .primary { min-height: 39px; margin-top: 13px; }
 .log-list { display: grid; gap: 0; margin-top: 14px; }
 .log-item { display: grid; grid-template-columns: 12px minmax(0,1fr) auto; gap: 10px; align-items: start; padding: 11px 3px; border-bottom: 1px solid #edf0e9; }

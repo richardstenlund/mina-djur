@@ -34,6 +34,13 @@ ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_amount TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS food_frequency TEXT;
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS sex TEXT CHECK (sex IN ('Hona', 'Hane', 'Okänt'));
 ALTER TABLE animals ADD COLUMN IF NOT EXISTS neutered BOOLEAN;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS breeder TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS father_name TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS father_color_pattern TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS father_coat TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS mother_name TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS mother_color_pattern TEXT;
+ALTER TABLE animals ADD COLUMN IF NOT EXISTS mother_coat TEXT;
 
 CREATE INDEX IF NOT EXISTS animals_user_id_idx ON animals(user_id);
 
