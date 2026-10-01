@@ -4,7 +4,8 @@ Webbapp för att hålla koll på katter och smådjur: vikt, kloklippning,
 veterinärbesök, medicin, vaccinationer, avmaskning, pälsvård och egna
 anteckningar. Flera personer kan skapa varsitt konto – varje användare
 ser bara sina egna djur. Varje djur har en egen profilsida där du kan
-ladda upp bilder och uppdatera informationen.
+ladda upp bilder och uppdatera informationen. Layouten anpassar sig efter
+mobiltelefoner, surfplattor och större skärmar.
 
 ## Superenkel installation
 
