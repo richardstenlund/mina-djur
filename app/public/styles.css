@@ -72,8 +72,11 @@ details.content-panel > summary h2 { margin: 0; font-size: 1.15rem; letter-spaci
 .list-title h2 { margin: 0; font-size: 1.15rem; letter-spacing: -.03em; }
 .count { color: var(--muted); font-size: .82rem; }
 .search { width: min(220px, 48%); min-height: 39px; padding-left: 36px; background: #fafbf8; }
+.list-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .search-wrap { position: relative; }
 .search-wrap::before { content: "⌕"; position: absolute; top: 6px; left: 12px; color: var(--muted); font-size: 1.25rem; }
+.type-filter { width: auto; min-height: 39px; max-width: 170px; background: #fafbf8; }
+.reminder-filter-label { font-size: .82rem; font-weight: 600; white-space: nowrap; margin: 0; }
 .animal-list { display: grid; gap: 13px; }
 .animal-card { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
 .animal-main { display: flex; justify-content: space-between; gap: 16px; padding: 18px; }
@@ -122,9 +125,11 @@ a.text-button { text-decoration: none; display: inline-flex; align-items: center
 
 /* Djurprofilsida */
 .profile-panel { margin-bottom: 20px; padding: 24px; }
-.profile-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.profile-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+.profile-head #printPassportButton { margin-left: auto; }
 .profile-icon { flex: 0 0 60px; width: 60px; height: 60px; font-size: 1.8rem; }
 .profile-panel h1 { margin: 0; font-size: 1.3rem; letter-spacing: -.025em; }
+.print-passport { display: none; }
 .profile-gallery { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
 .gallery-item { position: relative; margin: 0; }
 .gallery-item img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); display: block; }
@@ -256,7 +261,10 @@ a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:f
 	.list-heading { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 15px; }
 	.list-title { flex-wrap: wrap; }
 	details.content-panel > summary .list-title { flex-wrap: wrap; gap: 6px 10px; }
-	.search, .search-wrap { width: 100%; }
+	.search, .search-wrap, .list-controls, .type-filter { width: 100%; }
+	.list-controls { flex-direction: column; align-items: stretch; }
+	.type-filter { max-width: none; }
+	.reminder-filter-label { justify-content: flex-start; }
 	.profile-head { gap: 12px; }
 	.profile-panel h1 { font-size: 1.4rem; }
 	.profile-gallery { gap: 8px; }
@@ -296,3 +304,21 @@ a.text-button:focus-visible, button:focus-visible, input:focus-visible, select:f
 	.reminder-interval-form .field-hint { flex: 1; }
 	.auth-card { padding: 22px 17px; }
 }
+
+/* Djurpass – utskrift/PDF-export (window.print) */
+@media print {
+	.no-print, .topbar, #notice, .photo-form, .profile-form, details.content-panel { display: none !important; }
+	.profile-panel { display: none !important; }
+	body, .page, main { background: #fff !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+	.print-passport { display: block !important; width: 100%; padding: 0; color: #222; font-family: inherit; }
+}
+
+.print-passport-header { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.print-passport-header img, .print-passport-header .print-icon { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; font-size: 2.2rem; display: grid; place-items: center; background: var(--green-soft); }
+.print-passport h1 { margin: 0 0 4px; font-size: 1.5rem; }
+.print-passport h2 { font-size: 1.05rem; margin: 18px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+.print-passport-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+.print-passport-grid div { padding: 2px 0; font-size: .9rem; }
+.print-passport-grid strong { display: inline-block; min-width: 150px; color: #555; }
+.print-passport-note { white-space: pre-wrap; font-size: .9rem; }
+.print-passport-footer { margin-top: 24px; font-size: .75rem; color: #777; }

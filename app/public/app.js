@@ -261,16 +261,46 @@
 		return card;
 	}
 
+	function updateTypeFilterOptions() {
+		const typeFilter = document.querySelector('#typeFilter');
+		const previous = typeFilter.value;
+		const types = [...new Set(animals.map(animal => animal.type))].sort((a, b) => a.localeCompare(b, 'sv-SE'));
+		typeFilter.replaceChildren();
+		const allOption = document.createElement('option');
+		allOption.value = '';
+		allOption.textContent = 'Alla djurarter';
+		typeFilter.append(allOption);
+		types.forEach(type => {
+			const option = document.createElement('option');
+			option.value = type;
+			option.textContent = type;
+			typeFilter.append(option);
+		});
+		if (types.includes(previous)) typeFilter.value = previous;
+	}
+
 	function render() {
 		renderStats();
+		updateTypeFilterOptions();
 		const query = document.querySelector('#search').value.trim().toLocaleLowerCase('sv-SE');
-		const filtered = animals.filter(animal => `${animal.name} ${animal.type}`.toLocaleLowerCase('sv-SE').includes(query));
+		const selectedType = document.querySelector('#typeFilter').value;
+		const onlyReminders = document.querySelector('#reminderFilter').checked;
+		const filtered = animals.filter(animal => {
+			if (!`${animal.name} ${animal.type}`.toLocaleLowerCase('sv-SE').includes(query)) return false;
+			if (selectedType && animal.type !== selectedType) return false;
+			if (onlyReminders) {
+				const hasActiveReminder = (animal.reminders || []).some(reminder => reminder.status === 'försenad' || reminder.status === 'snart');
+				if (!hasActiveReminder) return false;
+			}
+			return true;
+		});
 		list.replaceChildren();
 		if (!filtered.length) {
+			const isFiltering = Boolean(query || selectedType || onlyReminders);
 			const empty = element('div', 'empty');
-			empty.append(element('div', 'empty-icon', query ? '⌕' : '🐾'));
-			empty.append(element('h3', '', query ? 'Inga djur hittades' : 'Här börjar er lilla flock'));
-			empty.append(element('p', '', query ? 'Prova att söka med ett annat namn eller en annan djurart.' : 'Lägg till ditt första djur så kan du samla vikt, kloklippning och annan viktig information på ett ställe.'));
+			empty.append(element('div', 'empty-icon', isFiltering ? '⌕' : '🐾'));
+			empty.append(element('h3', '', isFiltering ? 'Inga djur hittades' : 'Här börjar er lilla flock'));
+			empty.append(element('p', '', isFiltering ? 'Prova att ändra sökning, djurart eller påminnelsefilter.' : 'Lägg till ditt första djur så kan du samla vikt, kloklippning och annan viktig information på ett ställe.'));
 			list.append(empty);
 			return;
 		}
@@ -422,6 +452,8 @@
 	});
 
 	document.querySelector('#search').addEventListener('input', render);
+	document.querySelector('#typeFilter').addEventListener('change', render);
+	document.querySelector('#reminderFilter').addEventListener('change', render);
 	document.querySelector('#logoutButton').addEventListener('click', async () => {
 		try {
 			await api('/api/auth/logout', { method: 'POST' });

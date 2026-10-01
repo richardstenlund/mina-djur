@@ -104,7 +104,18 @@
 			<section class="panel content-panel" aria-labelledby="animals-title">
 				<div class="list-heading">
 					<div class="list-title"><h2 id="animals-title">Mina djur</h2><span id="count" class="count">0 djur</span></div>
-					<div class="search-wrap"><input id="search" class="search" type="search" placeholder="Sök djur..." aria-label="Sök efter djur"></div>
+					<div class="list-controls">
+						<div class="search-wrap">
+							<input id="search" class="search" type="search" placeholder="Sök djur..." aria-label="Sök efter djur">
+						</div>
+						<select id="typeFilter" class="type-filter" aria-label="Filtrera på djurart">
+							<option value="">Alla djurarter</option>
+						</select>
+						<label class="checkbox-label reminder-filter-label" for="reminderFilter">
+							<input id="reminderFilter" type="checkbox">
+							Bara påminnelser
+						</label>
+					</div>
 				</div>
 				<div id="animals" class="animal-list" aria-live="polite"></div>
 			</section>

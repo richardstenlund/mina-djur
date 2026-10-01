@@ -4,8 +4,9 @@ Webbapp för att hålla koll på katter och smådjur: vikt, kloklippning,
 veterinärbesök, medicin, vaccinationer, avmaskning, pälsvård, hälsodagbok
 och egna anteckningar. Varje djur har en egen profilsida med bilder,
 privata dokument, utgifter och möjlighet att dela åtkomst med andra
-användarkonton. Layouten anpassar sig efter mobiltelefoner, surfplattor
-och större skärmar.
+användarkonton. Du kan söka och filtrera dina djur på startsidan samt
+skriva ut eller spara ett djurpass som PDF från profilsidan. Layouten
+anpassar sig efter mobiltelefoner, surfplattor och större skärmar.
 
 ## Superenkel installation
 
@@ -188,6 +189,22 @@ npm start
 
 Kräver en lokalt körande Postgres-databas med schemat från
 `app/db/init.sql` inläst.
+
+## Automatiska tester
+
+Projektet har en testsvit som kör riktiga HTTP-anrop mot servern och en
+in-memory Postgres-kompatibel databas (PGlite) – du behöver alltså varken
+Docker eller en riktig Postgres-installation för att köra testerna:
+
+```powershell
+cd app
+npm install
+npm test
+```
+
+Testerna täcker bland annat registrering/inloggning, att en användare
+aldrig kan se eller ändra en annan användares djur, delning mellan
+användare, medicin/utgifter/påminnelser och rate limiting.
 
 ## Struktur
 

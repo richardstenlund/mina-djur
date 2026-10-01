@@ -197,6 +197,95 @@
 		});
 	}
 
+	function renderPrintPassport() {
+		const passport = document.querySelector('#printPassport');
+		passport.replaceChildren();
+
+		const header = element('div', 'print-passport-header');
+		const exampleImage = getAnimalExampleImage(animal.type);
+		if (animal.photos.length || exampleImage) {
+			const img = document.createElement('img');
+			img.src = animal.photos.length ? animal.photos[0].url : exampleImage;
+			img.alt = '';
+			header.append(img);
+		} else {
+			header.append(element('span', 'print-icon', typeIcons[animal.type] || '🐾'));
+		}
+		const headerText = element('div');
+		headerText.append(element('h1', '', animal.name));
+		const subtitleParts = [animal.breed ? `${animal.type} · ${animal.breed}` : animal.type];
+		if (animal.sex) subtitleParts.push(animal.sex);
+		if (animal.neutered) subtitleParts.push('Kastrerad');
+		headerText.append(element('p', '', subtitleParts.join(' · ')));
+		header.append(headerText);
+		passport.append(element('h2', '', 'Djurpass'), header);
+
+		const weightRecords = (animal.records || []).filter(record => record.type === 'Vikt' && record.weight);
+		const latestWeight = weightRecords.slice().sort((a, b) => b.date.localeCompare(a.date))[0];
+		const weightValue = latestWeight ? latestWeight.weight : animal.initialWeight;
+		const clawRecords = (animal.records || []).filter(record => record.type === 'Kloklippning');
+		const latestClaw = clawRecords.slice().sort((a, b) => b.date.localeCompare(a.date))[0];
+
+		function row(label, value) {
+			if (!value) return null;
+			const cell = element('div');
+			cell.append(element('strong', '', `${label}:`), document.createTextNode(` ${value}`));
+			return cell;
+		}
+
+		const basics = element('div', 'print-passport-grid');
+		[
+			row('Födelsedatum', animal.birthday ? formatDate(animal.birthday) : ''),
+			row('Vikt', weightValue ? `${new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2 }).format(weightValue)} kg` : ''),
+			row('Senast klippta klor', latestClaw ? formatDate(latestClaw.date) : ''),
+			row('Chipnummer', animal.microchipId),
+			row('Veterinärklinik', animal.vetName),
+			row('Veterinärens telefon', animal.vetPhone),
+			row('Försäkringsbolag', animal.insuranceCompany),
+			row('Försäkringsnummer', animal.insuranceNumber),
+			row('Foder', animal.foodType),
+			row('Mängd per gång', animal.foodAmount),
+			row('Hur ofta', animal.foodFrequency)
+		].filter(Boolean).forEach(cell => basics.append(cell));
+		passport.append(basics);
+
+		if (animal.allergies) {
+			passport.append(element('h2', '', 'Allergier / specialbehov'));
+			passport.append(element('p', 'print-passport-note', animal.allergies));
+		}
+
+		const hasPedigree = animal.breeder || animal.fatherName || animal.motherName;
+		if (hasPedigree) {
+			passport.append(element('h2', '', 'Uppfödning och föräldrar'));
+			const pedigree = element('div', 'print-passport-grid');
+			[
+				row('Uppfödare', animal.breeder),
+				row('Far', animal.fatherName),
+				row('Far – färg & teckning', animal.fatherColorPattern),
+				row('Far – hårlag', animal.fatherCoat),
+				row('Mor', animal.motherName),
+				row('Mor – färg & teckning', animal.motherColorPattern),
+				row('Mor – hårlag', animal.motherCoat)
+			].filter(Boolean).forEach(cell => pedigree.append(cell));
+			passport.append(pedigree);
+		}
+
+		const medications = (animal.medications || []).filter(medication => !medication.endDate || medication.endDate >= today());
+		if (medications.length) {
+			passport.append(element('h2', '', 'Aktuell medicinering'));
+			medications.forEach(medication => {
+				passport.append(element('p', 'print-passport-note', `${medication.name} – ${medication.dosage}, ${medication.frequency}`));
+			});
+		}
+
+		if (animal.info) {
+			passport.append(element('h2', '', 'Övrig information'));
+			passport.append(element('p', 'print-passport-note', animal.info));
+		}
+
+		passport.append(element('p', 'print-passport-footer', `Utskrivet från Mina djur ${formatDate(today())}`));
+	}
+
 	function renderReminders() {
 		reminderList.innerHTML = '';
 		(animal.reminders || []).forEach(reminder => {
@@ -604,6 +693,7 @@
 			renderMedications();
 			renderCosts();
 			renderDocuments();
+			renderPrintPassport();
 			await loadShares();
 		} catch (error) {
 			showNotice(error.message);
@@ -622,6 +712,7 @@
 			const photo = await api(`/api/animals/${animalId}/photos`, { method: 'POST', body: formData });
 			animal.photos.push(photo);
 			renderProfile();
+			renderPrintPassport();
 			photoForm.reset();
 		} catch (error) {
 			showNotice(error.message);
@@ -638,6 +729,7 @@
 			await api(`/api/animals/${animalId}/photos/${button.dataset.deletePhoto}`, { method: 'DELETE' });
 			animal.photos = animal.photos.filter(photo => photo.id !== button.dataset.deletePhoto);
 			renderProfile();
+			renderPrintPassport();
 		} catch (error) {
 			showNotice(error.message);
 		}
@@ -680,6 +772,7 @@
 			const updated = await api(`/api/animals/${animalId}`, { method: 'PUT', body: JSON.stringify(payload) });
 			animal = { ...animal, ...updated };
 			renderProfile();
+			renderPrintPassport();
 			showNotice('Sparat!');
 		} catch (error) {
 			showNotice(error.message);
@@ -723,6 +816,7 @@
 			renderRecords();
 			renderReminders();
 			renderWeightChart();
+			renderPrintPassport();
 			logForm.reset();
 			buildLogForm();
 		} catch (error) {
@@ -765,6 +859,7 @@
 			});
 			animal.medications.push(medication);
 			renderMedications();
+			renderPrintPassport();
 			medicationForm.reset();
 			document.querySelector('#medicationStartDate').value = today();
 		} catch (error) {
@@ -798,6 +893,7 @@
 			await api(`/api/animals/${encodeURIComponent(animalId)}/medications/${encodeURIComponent(button.dataset.deleteMedication)}`, { method: 'DELETE' });
 			animal.medications = animal.medications.filter(item => String(item.id) !== button.dataset.deleteMedication);
 			renderMedications();
+			renderPrintPassport();
 		} catch (error) {
 			safelyShowError(error);
 		}
@@ -839,6 +935,7 @@
 			const updatedMedication = { ...payload, ...(updated || {}), id: form.dataset.medicationId };
 			animal.medications = animal.medications.map(item => String(item.id) === form.dataset.medicationId ? updatedMedication : item);
 			renderMedications();
+			renderPrintPassport();
 			showNotice('Medicinen är uppdaterad.');
 		} catch (error) {
 			safelyShowError(error);
@@ -986,6 +1083,7 @@
 			renderRecords();
 			renderReminders();
 			renderWeightChart();
+			renderPrintPassport();
 		} catch (error) {
 			showNotice(error.message);
 		}
@@ -1017,6 +1115,14 @@
 			window.location.href = '/login.html';
 		}
 	});
+
+	const printButton = document.querySelector('#printPassportButton');
+	if (printButton) {
+		printButton.addEventListener('click', () => {
+			if (!animal) return;
+			window.print();
+		});
+	}
 
 	buildLogForm();
 	document.querySelector('#medicationStartDate').value = today();
